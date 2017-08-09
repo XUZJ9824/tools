@@ -27,11 +27,17 @@ public Sub main_proc()
     curMonth = Month(Now)
     curDay = Day(Now)
 
-	TCode_Name = WScript.Arguments.Item(0)     	
+	TCode_Name = WScript.Arguments.Item(0)    
+ 	msgbox TCode_Name
 	Site_Name =  WScript.Arguments.Item(1)
+    msgbox Site_Name
 	work_center = WScript.Arguments.Item(2) 
-	DestPath = WScript.Arguments.Item(3) 
-	SAPLoginProfile = WScript.Arguments.Item(4) 
+    msgbox work_center	
+    SAPLoginProfile = WScript.Arguments.Item(3) 
+    msgbox SAPLoginProfile
+	DestPath = WScript.Arguments.Item(4) 
+    msgbox DestPath
+
 		
 	bChoseManulMonth = 0 Rem: switch manual month or auto mode.
 
