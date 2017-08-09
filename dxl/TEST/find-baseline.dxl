@@ -1,0 +1,116 @@
+string strArrModule[100];
+int intModuleNum;
+
+
+strArrModule[0] = "/CMU-CMF Requirements and Test/EPIC ATC/SYS_SRS_EPIC_ATC"
+strArrModule[1] = "/CMU-CMF-Common/ATS Module/SRS_ATS_Core"
+strArrModule[2] = "/Mark II/Common/SRD/SRD_CPDLC_HMI"
+strArrModule[3] = "/CMU-CMF-Common/ATS Module/SRD/SRD_Seamless_Manager"
+strArrModule[4] = "/CMU-CMF-Common/PMCPC/SRD/SRD_CPDLC"
+strArrModule[5] = "/CMU-CMF-Common/PMCPC/SRD/SRD_CM"
+strArrModule[6] = "/CMU-CMF-Common/PMCPC/SRD/SRD_DSI"
+strArrModule[7] = "/CMU-CMF Requirements and Test/SW_SRD_EPIC_MCDU_Protocol"
+strArrModule[8] = "/CMU-CMF Requirements and Test/SW_SRD_BI_Broadcast_IO"
+strArrModule[9] = "/CMU-CMF Requirements and Test/SW_SRD_IT_Common_Initialization"
+strArrModule[10] = "/CMU-CMF Requirements and Test/SW_SRD_FD_Fault_Display"
+strArrModule[11] = "/CMU-CMF Requirements and Test/SW_SRD_FH_Fault_Event_Log_Manager"
+strArrModule[12] = "/CMU-CMF Requirements and Test/SW_SRD_PI_Printer_Interface"
+strArrModule[13] = "/CMU-CMF Requirements and Test/SW_SRD_AC_Aircraft_Configuration_Data_Management"
+strArrModule[14] = "/CMU-CMF Requirements and Test/SW_SRD_DSI_ASCB_Protocol"
+strArrModule[15] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SRD_DI_Debug_Maintenance_Terminal_LvlC"
+strArrModule[16] = "/Mark II/Common/SDD/SDD_HMI"
+strArrModule[17] = "/CMU-CMF-Common/ATS Module/SDD/SDD_Seamless_Manager"
+strArrModule[18] = "/CMU-CMF-Common/PMCPC/SDD/SDD_ASN"
+strArrModule[19] = "/CMU-CMF-Common/PMCPC/SDD/SDD_PM-CPDLC"
+strArrModule[20] = "/CMU-CMF-Common/PMCPC/SDD/SDD_CM"
+strArrModule[21] = "/CMU-CMF-Common/PMCPC/SDD/SDD_DSI"
+strArrModule[22] = "/CMU-CMF-Common/PMCPC/SDD/SDD_AAC"
+strArrModule[23] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_AC_Aircraft_Config_Mgnt_LvlC"
+strArrModule[24] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_BI_Broadcast_IO_LvlC"
+strArrModule[25] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_DI_Debug_Maintenance_Terminal_LvlC"
+strArrModule[26] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_EPIC_MCDU_Protocol_LvlC"
+strArrModule[27] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_FH_Fault_Event_Log_Manager_LvlC"
+strArrModule[28] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_IT_Common_Initialization_LvlC"
+strArrModule[29] = "/CMU-CMF Requirements and Test/EPIC ATC/SW_SDD_PI_Printer_Interface_LvlC"
+strArrModule[30] = "/CMU-CMF Requirements and Test/SW_SDD_DSI_ASCB_Protocol"
+strArrModule[31] = "/CMU-CMF Requirements and Test/EPIC ATC/EPIC ATC Test Environment"
+strArrModule[32] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_DOWNLINK"
+strArrModule[33] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_LOG"
+strArrModule[34] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_MAIN"
+strArrModule[35] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_NOTIFY"
+strArrModule[36] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_REPORT"
+strArrModule[37] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_REQUEST"
+strArrModule[38] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_SIDELINK"
+strArrModule[39] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_UPLINK"
+strArrModule[40] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_HMI_ATC_VALIDATION"
+strArrModule[41] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_AC_Aircraft_Configuration_Data_Management"
+strArrModule[42] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_BI_Broadcast_IO"
+strArrModule[43] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_DSI_ASCB_Protocol"
+strArrModule[44] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_EPIC_MCDU_PROTOCOL"
+strArrModule[45] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_FD_Fault_Display"
+strArrModule[46] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_FH_Fault_Event_Log_Manager"
+strArrModule[47] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_IT_Common_Initialization"
+strArrModule[48] = "/CMU-CMF Requirements and Test/EPIC ATC/STC_IO_ATC_PI_Printer_Interface"
+strArrModule[49] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_DOWNLINK"
+strArrModule[50] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_LOG"
+strArrModule[51] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_MAIN"
+strArrModule[52] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_NOTIFY"
+strArrModule[53] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_REPORT"
+strArrModule[54] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_REQUEST"
+strArrModule[55] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_SIDELINK"
+strArrModule[56] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_UPLINK"
+strArrModule[57] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_HMI_ATC_VALIDATION"
+strArrModule[58] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_AC_Aircraft_Configuration_Data_Management"
+strArrModule[59] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_BI_Broadcast_IO"
+strArrModule[60] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_DSI_ASCB_Protocol"
+strArrModule[61] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_EPIC_MCDU_PROTOCOL"
+strArrModule[62] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_FD_Fault_Display"
+strArrModule[63] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_FH_Fault_Event_Log_Manager"
+strArrModule[64] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_IT_Common_Initialization"
+strArrModule[65] = "/CMU-CMF Requirements and Test/EPIC ATC/STS_IO_ATC_PI_Printer_Interface"
+
+intModuleNum = 66;
+
+
+void progCB(DB x) 
+{ 
+	
+	string filename= "c:\\baseline_list.csv"
+	Stream stream_file= write filename;
+	stream_file << "Module,Baseline,Created By,Created On\n"
+	
+	int step= 0;
+	int i= 0;
+	progressStart(x, "Processing", "", intModuleNum);
+	
+	for(i=0; i<intModuleNum; i++)
+	{
+		progressStep ++step;
+	
+		Module mod= read(strArrModule[i], false);
+	
+		if(mod!=null)
+		{
+			string strModule = name mod;
+			Baseline bl= getMostRecentBaseline(mod) 
+		
+			stream_file << strArrModule[i] ","  (major bl)"."(minor bl) "," (user bl) "," (dateOf bl) "\n" 
+
+			close(mod);
+		}
+		else
+		{
+			print "Can not find--["(strArrModule[i])"]\n"
+		}
+	}
+	progressStop();
+}
+
+
+
+
+DB progressDB = create "Progress Baseline" 
+label(progressDB, "Get Baseline") 
+apply(progressDB, progCB) 
+show progressDB 
+ 

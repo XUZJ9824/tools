@@ -1,0 +1,883 @@
+//############################################################################
+//#
+//# ReqTraceSRS.dxl
+//#
+//# Count the number of requirements in a module or set of modules from a
+//# SRS viewpoint
+//#
+//# Modifications:
+//#
+//# Date:        Who:    Description:
+//# 25 Jun 2001  DLL     Baseline
+//# 24 Jul 2001  DLL     Added Metrics
+//# 26 Jun 2002  DB      Only show links for selected project
+//# 07 Oct 2002  DB      Exclude selected software releases
+//# 10 Jun 2003  DB      Added filtering out links that do not apply to the project
+//# 19 Oct 2003  DB      Set output directory to C:\TEMP
+//# 24 Oct 2003  DB      Added support for SRS to VTS traceability
+//# 23 Mar 2005  DB      Removed reference to the integer values that allign with
+//                       the project name
+//# 21 Aug 2006  BARS    Some lines added to fix bug with ProgressBar while analizing
+//                       SRD modules
+//#
+//############################################################################
+
+pragma runLim,0 // turn off the timeout dialog
+
+// The modules that will be looked at must start with this string
+const string szModuleID  = "SYS_SRS_";
+const string szMKIIModuleID  = "SRS_";
+const string szSRDPrefix = "SW_SRD_";
+const string szMKIISRDPrefix = "SRD";
+const string szHSIPrefix = "SW_HSI_";
+const string szHBTPrefix = "SW_SVCP_";
+const string szSTSPrefix = "sys_sts_";
+const string szVTSPrefix = "SYS_VTS_";
+const string szTATSPrefix = "SYS_TATS_";
+const string szSTCPrefix = "STC_";
+const string szMKIISTSPrefix = "STS_";
+const string szVerPrefix = "SYS_SVP_"              //Verification prefix
+//
+// Attribute names
+//
+const string szProjectID  = "Project"                 //Attr that has the project the req applies to
+const string szAnalysisID = "Req Analysis"            //Attr that has the req analysis
+const string szSWRelease  = "SW Release";             //Attr that has the SW Release
+const string szSubProj    = "Subproject";             //Attr that has the SW Release
+const string szVerifyID   = "Verification Method "    //Attr that has the verfication method
+const string szAllocID    = "Requirement Allocation " //Attr that has the req allocation
+const string szAbsNum     = "Absolute Number"
+const string szCriticalityID = "Epic Criticality"
+
+
+
+const string szVerMethods[] = { "Sys Test", "Sys Analysis", "Sys Demonstration", "Sys Inspection", "S/W Verification"}
+int    iNumMeth    = sizeof(szVerMethods)
+const string Criticalities[] = {"C", "D", "E", "N/A"}
+int NumOfCriticalities = sizeof(Criticalities)
+
+
+Buffer LinkLst  // List of test links
+Buffer SrdLst   // List of srd req numbers
+
+//
+// Strings and IDs for the checking the scope of the trace check.
+// These must remain in sync with each other.
+//
+const string szScope[] = { "Module", "Batch", "Project"}
+const string szScopeNoModule[] = { "Batch", "Project"}
+const int    iScpMod   = 0
+const int    iScpBatch = 1
+const int    iScpProj  = 2
+int    iScpInit  = iScpMod  // Enable Module scope by default
+
+// The default report extension, appended to the project name
+const string szReportSuffix = ".txt";
+const string szCSVFileSuffix = ".csv";
+//
+// The streams for the file i/o
+//
+Stream report
+Stream reportCSV
+Stream moduleList
+
+const string szReqSource[] = { "CMU Software", "ICD", "Hardware", "GBST", "FGT" }
+int    iReqInit = 0       // Enable first radio button initially
+
+const string szSubProjList[] = { "Core", "Gatelink", "ATN" }
+
+string strProjectName; // Selected project name
+
+bool isEpic = false
+
+// Running totals
+int iModTotalP[NumOfCriticalities]   = 0;
+int iModTestedP[NumOfCriticalities]  = 0;
+int iModSRSLinkP[NumOfCriticalities] = 0;
+int iModHBTLinkP[NumOfCriticalities] = 0;
+int iTotReqP[NumOfCriticalities]     = 0;
+int iTotTestedP[NumOfCriticalities]  = 0;
+int iTotHBTLinkP[NumOfCriticalities] = 0;
+int iTotSRSLinkP[NumOfCriticalities] = 0;
+int iModCount   = 0;
+int iSrcCheck            // Flags for sources to check
+
+DBE check_scope           // Scope of check, module, file, or project
+DBE selected_projects     // Projects to look for
+DBE sel_req_source        // Source to be checked
+DBE progress_list         // List box for system progress
+DBE mod_batch_file        // File containing the module list
+DBE Excluded_SW
+DBE IncSubProj
+
+#include "UtilityRoutines.new.dxl"
+
+//###############################################
+//# Main procedures
+//###############################################
+
+bool isValidForProject(Object linked_obj)
+{
+    return ((!null(linked_obj)) && isMember(linked_obj.szProjectID, strProjectName))
+}
+
+bool hasCorrespondingEpicCriticality(Object linked_obj, string Crit)
+{
+    string strTmp
+
+    if ((!isEpic) || (Crit == Criticalities[NumOfCriticalities - 1])) return true
+
+        noError()        
+        strTmp = linked_obj.szCriticalityID
+        return ((null lastError) && (InStr(strTmp, Crit) != 0))
+}
+
+void closeModules()
+{
+   Module closemodule;
+
+   for closemodule in database do {
+      if(!(isVisible closemodule) && ((type closemodule) == "Formal")){
+         close(closemodule)
+      }
+   }
+}
+
+//******************************************************************************
+// Function: count_links
+// Purpose:  Checks links from an object for SRS tracibility.
+// Returns:  Nothing
+// Inputs:   check_obj -
+//           module_name -
+// Outputs:  File - reportCSV
+//           File - report
+//******************************************************************************
+void count_links(Object check_obj, string module_name)
+{
+    string LinkSrc;       // Name of the link source
+    Object LinkSrcObj;    // Link source object
+    string SrdLinkSrc;    // Name of the srd link source
+    Object SrdLinkSrcObj; // srd link source object
+    string LinkProject;   // Project to generate report for
+
+    string VerMethod
+    Link   lnk;
+    Link   SrdLnk;
+    string targ_src;           // Name of the target source
+    string MemberStat          // For capture isMember errors
+    bool   ReqAlloc   = false;
+    bool   HbtTested  = false;
+    bool   HsiTested  = false;
+    int    SrcChk;
+    bool   flgDoCurrent;           // Flag to process the current object
+    string strReqAnalysis
+    string strTemp
+    string strObjNum
+    int    cntLoop
+    int    i
+    string Criticality
+    string err
+    bool is_criticality_assigned = false
+    bool is_member
+
+    //
+    // Determine if the Req Analysis field is set to Requirement
+    //
+    strReqAnalysis = check_obj.szAnalysisID  //Get the Req Analysis field
+    if (InStr( strReqAnalysis, "Requirement" ) !=0 ) {
+
+        setempty(SrdLst)
+        setempty(LinkLst)
+
+        //
+        // Determine if this objects Requirement Allocation is "CMU Software"
+        //
+        noError
+        is_member = isMember( check_obj.szAllocID, szReqSource[iSrcCheck] )
+        MemberStat = lastError  // Check and see if we got an error (source not defined)
+        if (null MemberStat) {  //if noerror
+            if (is_member) {     // See if any of the object's links start with the prefix
+                //
+                // See if the object's verification method is on the list
+                // "Sys Test", "Sys Analysis", "Sys Demonstration", "Sys Inspection", "S/W Verification"
+                //
+                VerMethod = check_obj.szVerifyID
+                for (i = 0 ; i < iNumMeth ; ++i) {
+                    if (VerMethod == szVerMethods[i]) {
+                        ReqAlloc = true;
+                        break;
+                    }
+                }
+                ReqAlloc = true;
+
+                if (ReqAlloc) {  //If verification required
+                    if (isEpic)
+                    {
+                        noError
+                        Criticality = check_obj.szCriticalityID
+                        err = lastError
+                        if (!null err)
+                        {
+                            Criticality = "-"
+                        }
+                    }
+                    else
+                    {
+                        Criticality = "-"
+                    }
+
+                    for (i = isEpic ? 0 : NumOfCriticalities - 1; i < NumOfCriticalities; i++)
+                    {
+                        if (isEpic)
+                        {
+                            if ((i < (NumOfCriticalities - 1)) && (InStr(Criticality, Criticalities[i]) == 0))
+                            {
+                                continue
+                            }
+
+                            if ((i == (NumOfCriticalities - 1)) && (is_criticality_assigned))
+                            {
+                                break
+                            }
+                            else
+                            {
+                                is_criticality_assigned = true
+                            }
+                        }
+
+                        reportCSV << module_name
+                        reportCSV << ":"
+                        reportCSV << identifier(check_obj)
+
+                        ++iModTotalP[i];
+                        // Check links
+                        cntLoop = 0
+                        // Open all relevent link modules
+                        open_source_lm_proj(check_obj)
+                        for lnk in check_obj<-"*" do {
+                            LinkSrc = source(lnk);
+                            LinkSrcObj = source(lnk)
+                            if (!null(LinkSrcObj))
+                            {
+                                if ((match_prefix(LinkSrc, szSRDPrefix) || match_prefix(LinkSrc, szMKIISRDPrefix)) && isValidForProject(LinkSrcObj) && hasCorrespondingEpicCriticality(LinkSrcObj, Criticalities[i])) //szSRDPrefix = "SW_SRD_"
+                                {
+                                    SrdLst += LinkSrc
+                                    SrdLst += ":"
+                                    SrdLst += (identifier LinkSrcObj)
+                                    SrdLst += " "
+
+                                    open_source_lm_proj(LinkSrcObj);
+                                    for SrdLnk in LinkSrcObj<-"*" do {
+                                        SrdLinkSrc = source(SrdLnk);
+                                        if (match_prefix(SrdLinkSrc, szHBTPrefix) || match_prefix(SrdLinkSrc, szSTSPrefix) || match_prefix(SrdLinkSrc, szSTCPrefix) || match_prefix(SrdLinkSrc, szMKIISTSPrefix)) { // "SW_SVCP_ or sys_sts"
+                                            SrdLinkSrcObj = source(SrdLnk);
+                                            if ((!null(SrdLinkSrcObj)) && isValidForProject(SrdLinkSrcObj) && hasCorrespondingEpicCriticality(SrdLinkSrcObj, Criticalities[i]))
+                                            {
+                                                LinkLst += (identifier LinkSrcObj)
+                                                LinkLst += "=>"
+                                                LinkLst += SrdLinkSrc
+                                                LinkLst += ":"
+                                                LinkLst += (identifier SrdLinkSrcObj)
+                                                LinkLst += " "
+                                                HbtTested = true;
+                                            }
+                                        } //endif (match_prefix
+                                    } //for SrdLnk
+                                } //endif (match_prefix(LinkSrc..."SW_SRD_")
+
+                                //
+                                // If the prefix starts with "SW_SVP" or "SW_HSI" or "SYS_VTS" or "SYS_TATS"
+                                if (match_prefix(LinkSrc, szVerPrefix) || match_prefix(LinkSrc, szHSIPrefix) || match_prefix(LinkSrc , szVTSPrefix) || match_prefix(LinkSrc, szTATSPrefix) || match_prefix(LinkSrc, szSTCPrefix) || match_prefix(SrdLinkSrc, szMKIISTSPrefix)) {
+
+                                    noError
+                                    is_member = isMember( LinkSrcObj.szProjectID, strProjectName )
+                                    MemberStat = lastError // Check to see if error (source not defined)
+
+                                    if (null MemberStat) {  //if noerror
+                                        if ((is_member ) && hasCorrespondingEpicCriticality(LinkSrcObj, Criticalities[i])) {
+                                            cntLoop++
+                                            if (cntLoop<=50) {
+                                                LinkLst += LinkSrc
+                                                LinkLst += ":"
+                                                LinkLst += (identifier LinkSrcObj)
+                                                LinkLst += " "
+                                            }
+                                            /*                               print identifier LinkSrcObj "\n"
+                                            */
+                                            HsiTested = true;
+                                        } //endif (ValidForProject )
+
+                                    }else{  // there was an error reading project
+                                        print "The project field is not defined properly."
+                                        strObjNum =  check_obj.szAbsNum
+                                        print "** "
+                                        print strObjNum""
+                                        print " | "
+                                        print LinkSrc
+                                        print ":"
+                                        print identifier(LinkSrcObj)
+                                        print "\n"
+
+                                    } //endif (null MemberStat)
+                                } //endif (match_prefix(
+                            }
+                        } //endfor lnk in check_obj
+                        if (isEpic)
+                        {
+                            reportCSV << ","
+                            reportCSV << Criticalities[i]
+                        }
+						reportCSV << ","
+                        if (length(SrdLst) == 0) {
+                            report << " "
+                            report << (identifier check_obj)
+                            report <<  " Missing SRD trace.\n"
+                        }
+                        else
+                        {
+                            reportCSV << SrdLst
+                        }
+                        if (length(LinkLst) > 0) {
+                            reportCSV << ",1,"
+                            reportCSV << LinkLst
+                            reportCSV << "\n"
+                            ++iModTestedP[i];
+                        } else {
+                            reportCSV << ",0\n"
+                        }
+                        if(HbtTested) ++iModHBTLinkP[i];
+                        if(HsiTested) ++iModSRSLinkP[i];
+                    }
+                } //endif (ReqAlloc)
+            } //endif (is_member)
+        } else {
+            report << module_name
+            report << "  *****ERROR*****  "
+            report << MemberStat
+            reportCSV << module_name
+            reportCSV << "  *****ERROR*****  "
+            reportCSV << MemberStat
+            // Tell the module handler to redisplay progress box
+            bRestartProg = true
+        } //endif (null MemberStat)
+    } //endif (strReqAnalysis == "Requirement")
+}
+
+//******************************************************************************
+// Function: process_module
+// Purpose:  Checks that a module meets the criteria to be check and calls the
+//           routine that performs the checks.
+// Returns:  Interrupted by user
+// Inputs:   module_name -
+//           DB
+// Outputs:
+//
+//******************************************************************************
+bool process_module (string module_name, DB db, string strProjectName)
+{
+    Module   check_module
+    AttrType attr_proj
+    Object   check_obj
+    string   link_mod      // Name of the link module
+    int      num_obj       // Number of objects in module
+    int      count_obj = 0 // Count of objects
+    int      num_objs;
+    int      i
+    string   strtmplist     // Temp string for holding lists
+    bool     flgDoObject
+    bool     canceled = false
+    bool     zero = false
+    bool     is_member
+    string   MemberStat
+
+    //
+    // Check that the module is a formal module and that its name starts
+    // with the correct identifier
+    //
+    if(match_prefix(module_name, szModuleID) || match_prefix(module_name, szMKIIModuleID)){
+        check_module = read(module_name, false)
+        if(null check_module){
+            print("Unable to read module " module_name)
+            return canceled;
+        }
+
+        num_obj = 1
+
+        if((type check_module) != "Formal"){
+            progressStep(num_obj)
+        } else {
+            for (i = 0; i < NumOfCriticalities; i++)
+            {
+                iModTotalP[i]   = 0;
+                iModTestedP[i]  = 0;
+                iModSRSLinkP[i] = 0;
+                iModHBTLinkP[i] = 0;
+            }
+
+            ++iModCount;
+
+            // Set up the progress box
+            num_objs = count_objects(check_module);
+            progressRange(strProjectName": "module_name, 0, num_objs);
+
+            attr_proj = get_type(szProjectID, check_module)
+
+            report << "\nModule: "
+            report << module_name
+            report << "\n"
+            // Reset the totals
+
+            if(!(null attr_proj) && (num_obj != 0))
+            {
+                iSrcCheck = get sel_req_source
+                //
+                // Retrieve the selected subprojects
+                int  iSubProjCore = get IncSubProj
+                bool bDisplayOne = false
+                //
+                // Loop though all objects in the current module
+                for check_obj in check_module do {
+                    flgDoObject = true
+                    // Following 3 lines added to fix bug with ProgressBar
+                    // Determine if the SW Release field contains an excluded SW Release version. If
+                    // so, set flgDoCurrent to false
+                    //
+                    for strtmplist in Excluded_SW do {
+                        noError
+                        is_member = isMember( check_obj.szSWRelease, strtmplist )
+                        MemberStat = lastError  // Check and see if we got an error
+                        if (null MemberStat) {  //if noerror
+                            flgDoObject = flgDoObject && !is_member
+                        }else print "Error in checking Excluded_SW\n"
+                    }
+                    //
+                    // If the user selected the core CM950 project
+                    //
+                    if (strProjectName=="CM-950") {
+                        //
+                        // if core is user selected and "- - - - -" is not in the subproject field then don't process this object
+                        //
+                        if ((iSubProjCore & 1) == 1) {
+
+                            noError
+                            is_member = isMember( check_obj.szSubProj, "- - - - -" )
+                            // The next three lines were put in because people can not follow directions and have
+                            // different values for core in different SRS modules.
+                            is_member = (is_member || isMember( check_obj.szSubProj, "- - - - - " ))
+                            is_member = (is_member || isMember( check_obj.szSubProj, "- - - - " ))
+                            is_member = (is_member || isMember( check_obj.szSubProj, "- - - - - - - " ))
+
+                            MemberStat = lastError  // Check and see if we got an error
+                            if (null MemberStat) {  //if noerror
+                                flgDoObject = flgDoObject && is_member
+                            }else
+                            if (!bDisplayOne==true) {
+                                bDisplayOne = true
+                                print "Error in checking Subproject in: " module_name "\n"
+                            }
+
+                        } //endif ((iSubProjCore & 1) == 1)
+                        //
+                        // if Gatelink is user selected and "Gatelink" is not in the subproject field then don't process this object
+                        //
+                        if ((iSubProjCore & 2) == 2) {
+                            noError
+                            is_member = isMember( check_obj.szSubProj, "Gatelink" )
+                            MemberStat = lastError  // Check and see if we got an error
+                            if (null MemberStat) {  //if noerror
+                                flgDoObject = flgDoObject && is_member
+                            }else
+                            if (!bDisplayOne==true) {
+                                bDisplayOne = true
+                                print "Error in checking Subproject in: " module_name "\n"
+                                flgDoObject = false
+                            }
+                        }
+
+                        // if ATN is user selected and "ATN" is not in the subproject field then don't process this object
+                        if ((iSubProjCore & 4) == 4) {
+                            noError
+                            is_member = isMember( check_obj.szSubProj, "ATN" )
+                            MemberStat = lastError  // Check and see if we got an error
+                            if (null MemberStat) {  //if noerror
+                                flgDoObject = flgDoObject && is_member
+                            }else
+                            if (!bDisplayOne==true) {
+                                bDisplayOne = true
+                                print "Error in checking Subproject in: " module_name "\n"
+                            }
+                        }
+                    } //endif (strProjectName=="CM-950")
+                    //
+                    // Determine if the project field contains the desired project. If so, and a true
+                    // to flgDoCurrent, else and a false.
+                    //
+                    noError
+                    is_member = isMember( check_obj.szProjectID, strProjectName )
+                    MemberStat = lastError  // Check and see if we got an error
+                    if (null MemberStat) {  //if noerror
+                        flgDoObject = flgDoObject && is_member
+                    }else print "Error in checking Project\n"
+
+                    //
+                    // If this object is valid, process it.
+                    //
+                    if ( flgDoObject ) {
+                        open_source_lm_proj(check_obj)
+                        count_links(check_obj, module_name);
+                    }
+                    // Check if progress box was blown away by an execption
+                    if(bRestartProg) {
+                        progressStop
+                        progressStart(db, "Trace Check Progress", module_name, num_obj)
+                        progressMessage(module_name)
+                        bRestartProg = false
+                    }
+
+                    progressStep(++count_obj)
+                    if (((count_obj % 20) == 0) && progressCancelled())
+                    {
+                        canceled = true
+                        break
+                    }
+
+                } // end for check_obj
+            } //end if (!(null attr_proj)...
+            for (i = isEpic ? 0 : NumOfCriticalities - 1; i < NumOfCriticalities; i++){
+
+                if (isEpic)
+                {
+                    if (((iModTotalP[i] == 0) && (i < NumOfCriticalities - 1)) || ((iModTotalP[i] == 0) && (i == NumOfCriticalities - 1) && zero))
+                    {
+                        continue
+                    }
+                    zero = true
+
+                    report << "Criticality "
+                    report << Criticalities[i]
+                    report << "\n"
+                }
+
+                iTotReqP[i] += iModTotalP[i]
+                iTotTestedP[i] += iModTestedP[i]
+                iTotSRSLinkP[i] += iModSRSLinkP[i]
+                iTotHBTLinkP[i] += iModHBTLinkP[i]
+
+                report << "\tRequirements = "
+                report << iModTotalP[i]""
+                report << " Tested = "
+                report << iModTestedP[i]""
+                report << "\n\tSVP/HSI Tested = "
+                report << iModSRSLinkP[i]""
+                report << " SVCP Tested = "
+                report << iModHBTLinkP[i]""
+                report << "\n\n"
+            }
+
+            flush(report)
+            flush(reportCSV)
+
+        }
+    } else {
+        progressStep(1)
+    }
+    return canceled || progressCancelled()
+}
+
+//******************************************************************************
+// Function: do_trace_check
+// Purpose:  Checks one or more modules
+// Returns:  Nothing
+// Inputs:   DB
+// Outputs:
+//
+//******************************************************************************
+void do_trace_check (DB db)
+{
+    // Retrieve data from user choices in dialog box
+
+    string batch_file = get mod_batch_file // File containing the module list
+    string strReportPrefix
+    string StrCsvPrefix
+    string StrReportFname
+    string strModuleName
+    int    scope = get check_scope
+    int    i
+    Module cm = current Module
+
+    LinkLst = create()
+    SrdLst = create()
+
+    if (null cm)
+    {
+        scope = scope + 1
+    }
+    else
+    {
+        strModuleName = (cm."Name" "")
+    }
+
+    //
+    // Determine which project was selected
+    //
+    for strProjectName in selected_projects do {
+
+        isEpic = match_prefix(strProjectName, "EPIC")
+
+        for (i = isEpic ? 0 : NumOfCriticalities - 1; i < NumOfCriticalities; i++)
+        {
+            iTotReqP[i]     = 0;
+            iTotTestedP[i]  = 0;
+            iTotHBTLinkP[i] = 0;
+            iTotSRSLinkP[i] = 0;
+        }
+        iModCount = 0
+
+        //
+        // Open report file
+        //
+        if (scope == iScpProj) { //checking the entire project ?
+            strReportPrefix = "C:\\temp\\" strProjectName "_SRS.ReqTrace"
+
+            StrCsvPrefix = strReportPrefix;
+            strModuleName = " ";
+        }else if (scope == iScpMod) {
+            strModuleName = (cm."Name");
+            strReportPrefix = "C:\\temp\\" strProjectName"_"strModuleName ".ReqTrace"
+            StrCsvPrefix = strReportPrefix;
+        }else{
+            moduleList = read(batch_file);
+            moduleList >> strModuleName;
+            StrCsvPrefix = "C:\\TEMP\\" strModuleName, ".Status"
+            strReportPrefix = fileGoodName_((name current Project), ".Status", "");
+        }
+        //
+        // Display the progress bar and window
+        //
+        progressStart(db, "Coverage Status Progress", "", 1);
+        //
+        // Set up the text file stream
+        //
+        StrReportFname = (strReportPrefix szReportSuffix);
+        if (!fileOverwriteOK_ StrReportFname) {
+            terminate (("Unable to open file for writing: " StrReportFname));
+        }
+        report = write(StrReportFname);
+        report << "Requirement Coverage Status" "\n\n";
+        report << "Project: "
+        report << (name current Project)
+        report << "\n\n";
+
+        while ((strModuleName != null) && (strModuleName != "" )) {
+            //
+            // Set up the CSV file stream
+            //
+            StrReportFname = (StrCsvPrefix szCSVFileSuffix)
+            if (!fileOverwriteOK_ StrReportFname) {
+                terminate (("Unable to open file for writing: " StrReportFname))
+            }
+            reportCSV = write(StrReportFname)
+            if (isEpic)
+            {
+                reportCSV << "Requirement,Criticality,SRD Link(s),Tested,Test Anchor(s)\n"
+            }
+            else
+            {
+                reportCSV << "Requirement,SRD Link(s),Tested,Test Anchor(s)\n"
+            }
+            //
+            // See if we are checking the entire project. If so, loop through all modules
+            // in the project.
+            //
+            if (scope == iScpProj){
+                for strModuleName in current Project do {
+                    raise db
+                    if (process_module(strModuleName, db, strProjectName)){
+                        if (!confirm("Check the rest of the Project?")){
+                            break
+                        }
+                    }
+                    closeModules();
+                } //endfor strModuleName
+                strModuleName = "";
+            //
+            // Not entire project, just one module
+            //
+            }else{
+                process_module(strModuleName, db, strProjectName)
+            }
+
+            // Close the opened file
+            close reportCSV;
+
+            if (scope == iScpBatch) {
+               closeModules();
+                moduleList >> strModuleName;
+                StrCsvPrefix = fileGoodName_(strModuleName, ".Status", "");
+            }else{
+                strModuleName = "";
+            }
+        } //endwhile
+
+        progressStop
+
+        report << iModCount""
+        report << " Formal Modules Checked\n"
+
+        for (i = isEpic ? 0 : NumOfCriticalities - 1; i < NumOfCriticalities; i++)
+        {
+            if (isEpic)
+            {
+                report << "\nCriticality: "
+                report << Criticalities[i]
+            }
+            report << "\nTotal Requirements = "
+            report << iTotReqP[i]""
+            report << " Total Tested = "
+            report << iTotTestedP[i]""
+            report << "\nTotal SVP/HSI Tested = "
+            report << iTotSRSLinkP[i]""
+            report << " Total SVCP Tested = "
+            report << iTotHBTLinkP[i]""
+            report << "\n"
+        }
+
+        close report;
+        if (scope == iScpBatch) {
+            close moduleList;
+        }
+    }
+    closeModules();
+
+    delete(LinkLst)
+    delete(SrdLst)
+
+    print "end of dxl script\n\n"
+    print "Output files are in ""C:\\Temp\\""\n"
+
+}
+
+//******************************************************************************
+// Function: ProcessSelectedProjects
+// Purpose:  Process the project selected multilist selection
+//
+//******************************************************************************
+
+// Create a callback routine to process the selected project item selection.
+//
+void ProcessSelectedProjects (DBE selected_projects) {
+    bool cm950 = false
+    string proj
+    for proj in selected_projects do {
+        if (proj == "CM-950") then cm950 = true
+    }
+    if (cm950)
+    show IncSubProj
+    else
+    hide IncSubProj
+}
+
+//******************************************************************************
+// Function: display_main_options
+// Purpose:  Create the main options dialog box for the program
+// Returns:  Nothing
+// Inputs:
+// Outputs:
+//
+//******************************************************************************
+void display_main_options (void)
+{
+    DB       main_options;  // Main options dialog box
+    string   filename;
+    AttrType proj_type;
+    AttrType SWRelease;
+    Module   OrigModule
+    Module   BaseModule
+
+    OrigModule = (current Module)
+
+    if((null current Project) && (null OrigModule)) {
+        terminate "Please run from an open project or module."
+    }
+
+    if (!null OrigModule){
+        if(!match_prefix(OrigModule."Name" "", szModuleID) && !match_prefix(OrigModule."Name""", szMKIIModuleID)){
+            terminate (("Please run from a module starting with \"" szModuleID) "\"")
+        }
+
+        if((type OrigModule) != "Formal"){
+            terminate "Please run from a \"Formal\" module."
+        }
+    }
+    //
+    // Creates the popup dialog box
+    //
+    main_options = create("SRS Traceability Checks")
+    //
+    // Creates the radio buttons, "Module", "Batch", "Project" and returns
+    // the desired scope
+    //
+    if (!null OrigModule)
+    check_scope = radioBox(main_options, "Scope of check: ", szScope, iScpInit)
+    else
+    check_scope = radioBox(main_options, "Scope of check: ", szScopeNoModule, 1)
+    //
+    // Open the Baseline SRS module to retrieve project information
+    //
+    BaseModule = read("/CMU-CMF Requirements and Test/Baseline Systems SRS Module",false )
+    //
+    // Populate the string proj_list and create the project combobox
+    //
+    proj_type = get_type( szProjectID, BaseModule)
+    string proj_list[proj_type.size]
+    fill_list(proj_list, proj_type)
+    sort(proj_list)
+    selected_projects = multiList(main_options, "Select Projects", 10, 5, proj_list, proj_type.size)
+    //
+    // Link the callback routine
+    //
+    set(selected_projects, ProcessSelectedProjects)
+    //
+    // Populate the string SWRelease and populate the multiList selector
+    //
+    SWRelease =  get_type( szSWRelease , BaseModule)
+    string SWRel_list[SWRelease.size]
+    fill_list(SWRel_list, SWRelease )
+    sort(SWRel_list)
+    Excluded_SW = multiList(main_options,"Excluded SW Versions",10,5,SWRel_list, SWRelease.size)
+    //
+    // Populate the checkbox list and select the core as default
+    //
+    IncSubProj = checkBox(main_options,"Included Subprojects",szSubProjList, 1)
+    hide IncSubProj
+    //
+    // Displays a label
+    //
+    label(main_options, "Module Batch File:")
+    //
+    // Created a file dialog and returns the selected file
+    //
+    filename = fileGoodName_("", "", "")
+    mod_batch_file = fileName(main_options, filename)
+    //
+    // Creates the radio buttons, "CMU Software", "ICD", "Hardware", "GBST", "FGT"
+    // and returns the source to check
+    //
+    sel_req_source = radioBox(main_options,"Source to check:", szReqSource, iReqInit)
+    //
+    // Creates the command buttons "Do Check" and "Close"
+    //
+    ok(main_options, "Do Check", do_trace_check)
+    //
+    // Set the current module to the original module that this DXL was opened from
+    //
+    close BaseModule
+    if (!null OrigModule)
+    current = OrigModule
+    //
+    // Displays the popup dialog box
+    //
+    show main_options
+}
+
+display_main_options;

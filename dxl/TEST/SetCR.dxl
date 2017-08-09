@@ -1,0 +1,29 @@
+﻿Module m = current;
+Object o;
+string txtCrNum = ""
+
+DB myDb = create("Set SCR")
+DBE txtCR = text(myDb, "Enter your CR NO. here:", "", 24, false)
+
+void SetCR(DBE my_dbe)
+{
+    txtCrNum = get(txtCR)
+    if (txtCrNum == "")
+    {
+        ack "No CR entered! Please Confirm."
+        halt
+    }
+    for o in m do
+    {
+        o."SCR" = txtCrNum
+    }
+}
+
+
+DBE btnOK = button(myDb, "OK", SetCR)
+
+realize(myDb)
+
+show myDb
+
+halt;

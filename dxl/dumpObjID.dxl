@@ -1,0 +1,15 @@
+Object obj=current
+Column c
+string filename = "c:\\dumpId.txt"
+
+print "Writing to " filename "\n"
+
+Stream out = write filename
+
+for obj in current Module do
+{
+    c = column( 1 )
+    out << obj."Absolute Number" "\n"
+}
+
+close out

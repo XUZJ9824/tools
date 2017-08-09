@@ -1,0 +1,134 @@
+DB srdReport = centered("SRD Trace Report") 
+string srds[] =  {"HMI SRD", "IO SRD"} 
+DBE srdTypeRadio = radioBox(srdReport , "Please Select SRD Type: ", srds, -1) 
+
+Regexp regStc = null; //regexp "^(STC_HMI_ATC)";
+Regexp regPrj = regexp "(EPIC ATN)";
+Regexp regIoReq = regexp "(shall)";
+//Regexp regCriticalLvl = regexp "(Criticality)";
+
+string btns[] = {"Ok"};
+string finish[] = {"Done"};
+
+string csvFileName = "";
+
+Object objSRD = null, objSTC = null;
+string srdID = "", stcID = "";
+Link lnk = null;
+Stream csvFile = null;
+string reqAttr = "";
+string criticalLvl = "";
+string objTxt = "";
+string stcModName = "";
+string srd = "", stc = "";
+int srdTypeIndex = -1;
+
+bool stcRqmnt = false;
+
+Module mSRD = current;
+ModName_ srcModRef;
+Module tmp = null;
+
+void GenerateReport(DB db)
+{
+    srdTypeIndex = get srdTypeRadio;
+    if(srdTypeIndex == -1)
+    {
+        errorBox(srdReport, "Please Select a Type of SRD!");
+        halt;
+    }
+
+    busy(srdReport);
+    string srdType = srds[srdTypeIndex];
+    csvFileName = "D:\\" upper(name(mSRD)) ".CSV";
+    
+        if(canOpenFile(csvFileName, true))
+        {
+            csvFile = write csvFileName;
+        }
+        else
+        {
+            errorBox(srdReport, "Can not open " csvFileName " for writing!");
+            halt;
+        }
+    csvFile << "SRD Module Name" ",";
+    csvFile << "Requirement" ",";
+    csvFile << "Test Case Module Name" ",";
+    csvFile << "Verify Statement" ",";
+    csvFile << "Link Module Name" "\n";
+
+    for objSRD in mSRD do
+    {
+        srdID = "";
+        stcID = "";
+        stcModName = "";
+        lnk = null;
+        stcRqmnt = false;
+        if(srdType == "HMI SRD")
+        {
+            reqAttr = objSRD."REQ Analysis";
+            if(reqAttr != "HI Level Req") then continue;
+            regStc = regexp "^(STC_HMI_ATC)";
+        }
+        else
+        {
+            reqAttr = objSRD."Object Text";
+            if(!(regIoReq reqAttr)) then continue;
+            criticalLvl = objSRD."Criticality";
+            if(criticalLvl != "C") then continue;
+            regStc = regexp "^(STC_IO_ATC)";
+        }
+        reqAttr = objSRD."Project";
+        if(!(regPrj reqAttr)) then continue;
+        srdID = identifier objSRD;
+        for srcModRef in objSRD <- "*" do
+        {
+            if(!open(srcModRef))
+            {
+                read(fullName(srcModRef), false);
+            }
+        }
+        for lnk in objSRD <- "*" do
+        {
+            objSTC = source lnk;
+            stcID = identifier objSTC;
+            mLnk = module(lnk);
+            stcModName = source lnk;
+            if(regStc stcModName)
+            {
+                csvFile << name(mSRD) ",";
+                csvFile << srdID ",";
+                csvFile << stcModName ",";
+                csvFile << stcID ",";
+                csvFile << name mLnk "\n";
+                stcRqmnt = true;
+                stcID = "";
+            }
+        }
+        if(!stcRqmnt)
+        {
+            csvFile << name(mSRD) ",";
+            csvFile << srdID ",";
+            csvFile << "" ",";
+            csvFile << "" ",";
+            csvFile << "" "\n";
+        }
+        stcRqmnt = false;
+    }
+    messageBox("Report Saved to:\n" csvFileName, finish, msgInfo);
+
+    if(csvFile != null)
+    {
+        close(csvFile);
+    }
+
+    for tmp in database do
+    {
+        close(tmp, false);
+    }
+    ready(srdReport);
+    destroy(srdReport);
+}
+
+apply(srdReport , "Generate", GenerateReport);
+show srdReport;

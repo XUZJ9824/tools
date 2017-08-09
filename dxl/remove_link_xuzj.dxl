@@ -1,0 +1,57 @@
+Object srcObj, tarObj;
+Module curModule, tarModule, srcModule;
+string strSrcModName,strTarModName,strLinkModuleName;
+
+void Remove_Link_By_XuZhijian()
+{
+    curModule=current;
+    //Source Module Name. It stands for the module where link start from.
+    strSrcModName = path (curModule) "/" name(curModule);
+    //Target Module Name. It stands for the module where link end to.
+    strTarModName ="/CMU-CMF Requirements and Test/EPIC ATC/SYS_SRS_EPIC_ATC";
+    //Default Link Module Name. a module where link infomation saved in.
+    strLinkModuleName = "/CMU-CMF-Common/PMCPC/SRD/DOORS Links";
+    //Absolut number of target object, for example, we use 56 for target ID SRS_ATSCORE56
+    tarAbsoluteNumber="59"
+
+      //Open source module for write
+      Module srcModule = edit(strSrcModName, false);
+    if (srcModule == null)
+    {
+        ack "Failed to open Source Module: " strSrcModName
+          halt();
+    }
+
+    //Open target module for read only
+    Module tarModule = read(strTarModName, false);
+    if (tarModule == null)
+    {
+        ack "Failed to open Target Module: " strTarModName
+          halt();
+    }
+    //Set default link module name
+    setDefaultLinkModule (strLinkModuleName);
+
+    Link l;
+    for srcObj in srcModule do
+               {
+                   for l in (srcObj) -> "*" do //"/CMU-CMF Requirements and Test/EPIC ATC/SYS_SRS_EPIC_ATC" do
+                         {
+                             string strOwn = l."Created By";
+                             if( strOwn == "Zhijian Xu")
+                             {
+                                 //print "out link:" strOwn "\n";
+                                 print "Remove link for " identifier(srcObj) " \n";
+                                 delete(l);
+                             }
+                         }
+               }
+    flushDeletions();
+    save (srcModule);
+    close (tarModule, false);
+}
+
+Remove_Link_By_XuZhijian;
+
+
+

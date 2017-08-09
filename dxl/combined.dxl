@@ -1,0 +1,454 @@
+// epic_atn.dxl
+/*
+ *  Script to set objects in selected modules to have Project includes EPIC ATN
+ *  if Project includes EPIC AOA
+ *  Adds EPIC ATN to Project attribute is not present
+ *
+ *	Renames attribute definition ant type "787 criticality" to "criticality" and sets Multi or create new attribute "criticality"
+ *
+ *  "Test" mode reports on changes to be made without actually making any changes
+ *  "Apply" mode reports on changes to be made AND attempts to make those changes
+ *
+ *  "Create minor baseline" creates new minor baseline, when modul was modified and sets following comment: "Project EPIC ATN and attribute CRITICALITY was added."
+ *
+ *  "Set C ..." sets "C" in newly created attribute CRITICALITY
+ *  "Set D ..." sets "D" in newly created attribute CRITICALITY
+ *
+ *  Results are logged to c:\temp\combinedscript.txt
+ *
+ *  March 11, 2008 jsedlak   Initial release
+ *  April 9, 2008 jsedlak    epic_atn.dxl and addAttr.dxl combined
+ *
+ */
+pragma runLim, 0
+
+const string TITLE = "Add EPIC ATN and Add/Rename Criticality Attribute"
+const string FORMAL = "Formal"
+const string PROJECT = "Project"
+const string PROJECT_AOA = "EPIC AOA"
+const string PROJECT_ATN = "EPIC ATN"
+const string PROJECT_PM_CPDLC = "PM-CPDLC"
+const string ORIG_ATTRIBUTE = "787 CRITICALITY"
+const string NEW_ATTRIBUTE = "Criticality"
+const string SW_RELEASE = "EPIC Block 2.0"
+const string SW_RELEASE_ATTR = "SW Release"
+string names[] = {"C","D","E"}
+string def_part[] = {"C", "D"}
+const string NULLS[] = {}
+
+AttrDef AttDef
+AttrType AttTyp
+Buffer Results
+DB Db
+DBE FldrSpecDbe, FldrSpecBrowseDbe, ModNamesDbe, ResultsDbe, dbeSetInDeleted, SetCDDbe, dbeCreateBaseline, dbeForceScript
+Item Itm
+Module CurMod, Mod
+Object Obj
+Skip ModNames, UndeletedObjs
+bool IsApplyMode, ProgressCancelled,SetInDeleted, SetC, SetD, CreateBaseline, HasProjectATNOption, HasSWReleaseOption, ForceScript
+int ProgressInt, ProgressLimit
+string SelectedFldrSpec, ModName, SelectedModName, CurModSpec, ErrMsg
+
+void ProcessObj() {
+    bool PM_CPDLC = false
+	if (!isMember(Obj.PROJECT, PROJECT_AOA)){
+        if (!isMember(Obj.PROJECT, PROJECT_PM_CPDLC)){
+          return
+        }
+        else{
+           PM_CPDLC = true
+        }
+    }
+	if (!HasProjectATNOption or isMember(Obj.PROJECT, PROJECT_ATN)) return
+//	((Results += "\tUpdate object: ") += identifier Obj) += "\n"
+	if (SetInDeleted and isDeleted Obj) {
+//		Results += "\t\tTemporarily undelete the object\n"
+		put(UndeletedObjs, Obj, Obj)
+		if (IsApplyMode) {
+			undelete Obj
+			if (isDeleted Obj) {
+				Results += "\t\t{\\b ERROR: Failed to undelete object"(identifier Obj)"}\n"
+			}
+		}
+	}
+//	((((Results += "\t\tSet ") += PROJECT) += " attribute to include ") += PROJECT_ATN) += "\n"
+//    if (HasSWReleaseOption and PM_CPDLC) ((((Results += "\t\tSet ") += SW_RELEASE_ATTR) += " attribute to include ") += SW_RELEASE) += "\n"
+	if (IsApplyMode) {
+		if (canModify(Obj.PROJECT)) {
+			Obj.PROJECT += PROJECT_ATN
+            if (HasSWReleaseOption and PM_CPDLC){
+                Obj.SW_RELEASE_ATTR += SW_RELEASE
+            }
+		} else {
+			Results += "\t\t{\\b ERROR: Cannot modify attribute value in "(identifier Obj)"}\n"
+		}
+	}
+}
+
+bool AddATNToProjectTypeIfNecessary() {
+    HasProjectATNOption = false
+	setRealColorOptionForTypes true
+	AttDef = find(Mod, PROJECT)
+	if (null AttDef) return false
+	AttTyp = AttDef.type
+	int i = AttTyp.size
+	string newStrings[i+1]
+	int newValues[i+1]
+	int newColors[i+1]
+	int replaces[i+1]
+	newStrings[i] = PROJECT_ATN
+	newValues[i] = i
+	newColors[i] = -1
+	replaces[i] = -1
+	for (i=0; i<AttTyp.size; i++) {
+		newStrings[i] = AttTyp.strings[i]
+		if (newStrings[i] == PROJECT_ATN) {
+            HasProjectATNOption = true
+			return true 
+		}
+		newValues[i] = AttTyp.values[i]
+		newColors[i] = AttTyp.colors[i]
+		replaces[i] = i
+	}
+//	((((Results += "\tAdding ") += PROJECT_ATN) += " option to ") += PROJECT) += " attribute type\n"
+	if (IsApplyMode) {
+		AttTyp = modify(AttTyp, AttTyp.name, newStrings, newValues, newColors, replaces, ErrMsg)
+		if (! null ErrMsg) {
+			((Results += "\t{\\b ERROR: modify type returned: ") += ErrMsg) += "}\n"
+			return false
+		}
+	}
+    HasProjectATNOption = true
+	return true
+}
+
+bool AddSWReleaseTypeIfNecessary() {
+	HasSWReleaseOption = false
+    setRealColorOptionForTypes true
+	AttDef = find(Mod, SW_RELEASE_ATTR)
+	if (null AttDef) return false
+	AttTyp = AttDef.type
+	int i = AttTyp.size
+	string newStrings[i+1]
+	int newValues[i+1]
+	int newColors[i+1]
+	int replaces[i+1]
+	newStrings[i] = SW_RELEASE
+	newValues[i] = i
+	newColors[i] = -1
+	replaces[i] = -1
+	for (i=0; i<AttTyp.size; i++) {
+		newStrings[i] = AttTyp.strings[i]
+		if (newStrings[i] == SW_RELEASE) {
+            HasSWReleaseOption = true
+            return false 
+		}
+		newValues[i] = AttTyp.values[i]
+		newColors[i] = AttTyp.colors[i]
+		replaces[i] = i
+	}
+//	((((Results += "\tAdding ") += SW_RELEASE) += " option to ") += SW_RELEASE_ATTR) += " attribute type\n"
+	if (IsApplyMode) {
+		AttTyp = modify(AttTyp, AttTyp.name, newStrings, newValues, newColors, replaces, ErrMsg)
+		if (! null ErrMsg) {
+			((Results += "\t{\\b ERROR: modify type returned: ") += ErrMsg) += "}\n"
+			return false
+		}
+	}
+    HasSWReleaseOption = true
+	return true
+}
+
+bool HasAttribute(string attName, AttrBaseType attBasTyp, bool isMulti) {
+	AttDef = find(Mod, attName)
+	if (null AttDef or ! AttDef.object) {
+//		((Results += "\t{\\b ERROR: Missing object-level attribute: ") += attName) += "}\n"
+		return false
+	}
+	if (attBasTyp == attrEnumeration) {
+		if (isMulti != AttDef.multi) {
+//			((Results += "\t{\\b ERROR: Incorrect multi-value setting on attribute: ") += attName) += "}\n"
+		}
+	}
+	AttTyp = AttDef.type
+	if (AttTyp.type != attBasTyp) {
+//		((Results += "\t{\\b ERROR: Incorrect base type for attribute: ") += attName) += "}\n"
+		return false
+	}
+	return true
+}
+
+bool HasRequiredAttributes(string attrName) {
+    bool hasRequiredAttributes = true
+        if (! HasAttribute(NEW_ATTRIBUTE, attrEnumeration, true)) hasRequiredAttributes = false
+            return hasRequiredAttributes
+}
+
+bool AttributeExists(string attr)
+{
+    return exists(attribute(attr))
+}
+
+void AddAttribute()
+{
+    string mess = ""
+	AttrType at = null
+        if (IsApplyMode) at = create(NEW_ATTRIBUTE, names, mess)
+
+        if ((null at) and IsApplyMode){
+            print mess
+        }
+        else{
+            if (IsApplyMode) {
+                AttrDef ad = create object type NEW_ATTRIBUTE multi true attribute NEW_ATTRIBUTE
+                if (SetC or SetD) {
+                    for Obj in entire Mod do{
+                        if (isDeleted Obj) {
+//                            Results += "\t\tTemporarily undelete the object\n"
+                            put(UndeletedObjs, Obj, Obj)
+                            if (IsApplyMode) {
+                                undelete Obj
+                                if (isDeleted Obj) {
+                                    Results += "\t\t{\\b ERROR: Failed to undelete object"(identifier Obj)"}\n"
+                                }
+                            }
+                        }                        
+                        if (SetC) then Obj.NEW_ATTRIBUTE += "C"
+                        if (SetD) then Obj.NEW_ATTRIBUTE += "D"
+                    }
+                }
+            }
+                Results += "\tAttribute was added"
+                if (SetC or SetD) Results += " and setted"
+                Results += "\n"
+        }
+}
+
+void RenameAttribute()
+{
+    string mess = ""
+        if (!HasAttribute(ORIG_ATTRIBUTE, attrEnumeration, false)) return
+
+                AttrDef ad = find(Mod, ORIG_ATTRIBUTE)
+                if (!null ad)
+                {
+                if (IsApplyMode)
+                {
+                ad = modify(ad, setName, NEW_ATTRIBUTE)
+                ad = modify(ad, setMulti, true)
+                AttrType at = ad.type
+                at = modify(at, NEW_ATTRIBUTE, mess)
+                }
+                Results += "\tName was changed\n"
+
+                }
+                else
+                {
+                print "Definition" ORIG_ATTRIBUTE "wasn't founded\n" mess
+                }
+}
+
+void ProcessMod() {
+    bool process
+	if (HasAttribute(PROJECT, attrEnumeration, true))
+    {
+
+    	process = AddATNToProjectTypeIfNecessary
+        if (AddSWReleaseTypeIfNecessary || process){
+        	for Obj in entire Mod do {
+		        ProcessObj
+        	}
+            if (SetInDeleted){
+                for Obj in UndeletedObjs do {
+//                    ((Results += "\tRedelete object: ") += identifier Obj) += "\n"
+                    if (IsApplyMode and ! isDeleted Obj) {
+                        if (! canDelete Obj) {
+                            Results += "\t{\\b ERROR: Cannot delete object "(identifier Obj)"\n"
+                            } else {
+                                softDelete Obj
+                            }
+                       }
+                       delete(UndeletedObjs, Obj)
+                    }
+            }
+        }
+    }
+    if (!HasAttribute(NEW_ATTRIBUTE, attrEnumeration, true))
+    {
+        if (AttributeExists(ORIG_ATTRIBUTE)) then RenameAttribute() else AddAttribute()
+    }
+}
+
+void ProcessSelectedModName() {
+	progressMessage "Processing " SelectedModName
+	Baseline bas
+    Date d 
+	if (IsApplyMode) {
+		Mod = edit(SelectedFldrSpec "/" SelectedModName, false, false)
+		if (null Mod or ! isEdit Mod) {
+			((Results += "\t{\\b ERROR: Could not edit module: ") += SelectedModName) += "}\n"
+			return
+		}
+	} else {
+		Mod = read(SelectedFldrSpec "/" SelectedModName, false)
+	}
+	
+    if (!ForceScript){
+        bas = getMostRecentBaseline(Mod)
+        d = Mod."Last Modified On"
+        if ((null bas) || (dateOf(bas) < d)){
+            Results += "\tERROR: Modul isn't baselined or is modified.\n"
+            if (isVisible Mod) {
+                refresh Mod
+                refreshExplorer Mod
+            } else {
+                close Mod
+            }
+            return
+        }
+    }
+	
+    ProcessMod
+	
+    if (IsApplyMode && unsaved Mod) {
+		progressMessage "Saving changes to module " SelectedModName
+		save Mod
+	}
+    if (IsApplyMode && CreateBaseline) {
+        create(Mod, nextMinor, "Project EPIC ATN and attribute CRITICALITY was added.")
+    }
+
+	if (isVisible Mod) {
+		refresh Mod
+		refreshExplorer Mod
+	} else {
+        if (!(IsApplyMode && CreateBaseline))
+    		close Mod
+	}
+}
+
+void DiscardChanges() {
+	for SelectedModName in ModNamesDbe do {
+		Mod = module item SelectedFldrSpec "/" SelectedModName
+		if (! null Mod and ! isVisible Mod and unsaved Mod) close(Mod, false)
+	}
+}
+
+void DoIt() {
+    SetInDeleted = get dbeSetInDeleted
+    
+    int i = get SetCDDbe
+
+    SetC = ((i & 1) == 1)
+    SetD = ((i & 2) == 2)
+
+    ForceScript = get dbeForceScript
+    CreateBaseline = get dbeCreateBaseline
+	Results = create
+	set(ResultsDbe, "")
+	ProgressInt = ProgressLimit = 0
+	ProgressCancelled = false
+	for SelectedModName in ModNamesDbe do ProgressLimit++
+	if (ProgressLimit == 0) {
+		errorBox "Please select module(s) to process"
+		return
+	}
+	progressStart(Db, TITLE, "", ProgressLimit)
+	for SelectedModName in ModNamesDbe do {
+		if (length Results > 0) Results += '\n'
+		((Results += "Processing ") += SelectedModName) += '\n'
+		ProcessSelectedModName
+		progressStep ++ProgressInt
+		if (progressCancelled) {
+			ProgressCancelled = true
+			break
+		}
+	}
+	progressStop
+	if (ProgressCancelled) {
+		infoBox "Operation cancelled by the user"
+		if (IsApplyMode) DiscardChanges
+	} else {
+		setFromBuffer(ResultsDbe, Results)
+	}
+    string filename = "c:\\temp\\combinedscript.txt"
+    Stream out = write filename
+    out << Results
+    close out 
+    delete Results
+	raise Db
+}
+
+void ApplySelected(DB db) {
+	IsApplyMode = true
+	DoIt
+}
+
+void TestSelected(DB db) {
+	IsApplyMode = false
+	DoIt
+}
+
+void PopulateModNamesDbe() {
+	empty ModNamesDbe
+	for Itm in folder SelectedFldrSpec do {
+		if (type Itm != FORMAL) continue
+		ModName = name Itm
+		put(ModNames, ModName, ModName)
+	}
+	int i = 0
+	for ModName in ModNames do {
+		insert(ModNamesDbe, i, ModName)
+		if (SelectedFldrSpec "/" ModName == CurModSpec) set(ModNamesDbe, i, true)
+		i++
+		delete(ModNames, ModName)
+	}
+}
+
+void FldrSpecBrowseDbeSelected(DBE dbe) {
+	SelectedFldrSpec = fnMiniExplorer(Db, MINI_EXP_FP, null, null)
+	if (! folder SelectedFldrSpec) return
+	set(FldrSpecDbe, SelectedFldrSpec)
+	PopulateModNamesDbe
+}
+
+void CloseSelected(DB db) {
+	delete UndeletedObjs
+	delete ModNames
+	hide db
+}
+
+ModNames = createString
+UndeletedObjs = create
+SelectedFldrSpec = fullName current Folder
+CurMod = current Module
+if (null CurMod) {
+	CurModSpec = ""
+} else {
+	CurModSpec = fullName CurMod
+}
+Db = create(TITLE, styleCentered)
+FldrSpecDbe = field(Db, "Folder to process:", SelectedFldrSpec, 40, true)
+beside Db
+FldrSpecBrowseDbe = button(Db, "Browse...", FldrSpecBrowseDbeSelected)
+left Db
+label(Db, "Select module(s) to process:")
+ModNamesDbe = listView(Db, listViewOptionMultiselect, 400, 15, NULLS)
+
+SetCDDbe = checkBox(Db, "Set as Default value for Criticality:", def_part, 2)
+
+dbeSetInDeleted = toggle(Db, "Set in Deleted objects", false)
+dbeCreateBaseline = toggle(Db, "Create minor baseline", false)
+dbeForceScript = toggle(Db, "Run scrip in any cases", false)
+
+ResultsDbe = richText(Db, "Results", "", 400, 300, true)
+apply(Db, "Test", TestSelected)
+apply(Db, "Apply", ApplySelected)
+close(Db, true, CloseSelected)
+realize Db
+setExtraHeightShare(ModNamesDbe, 0.5)
+setExtraHeightShare(ResultsDbe, 0.5)
+insertColumn(ModNamesDbe, 0, "Module Name", 394, iconNone)
+PopulateModNamesDbe
+setCenteredSize(Db, 450, 650)
+show Db

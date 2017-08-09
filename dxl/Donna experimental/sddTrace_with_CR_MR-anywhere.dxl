@@ -1,0 +1,689 @@
+// User Function
+/*
+ Checks trace links between SDD and SRD documents
+*/
+
+pragma runLim,0 // turn off the timeout dialog
+
+// The modules that will be looked at must start with this string
+string szSRDModuleID = "SW_SRD_"
+string szSDDModuleID = "SW_SDD_"
+
+Array ListArr = create(1,1)
+int   ListArrSize = 0
+
+// The attribute name that contains the project the requirement applies to
+string szProjectID = "Project"
+
+string sddname = "", srdname = ""
+
+// Strings and IDs for which checks to run and generate reports.
+// These must remain in sync with each other.
+string szSelections[] = { "Check that all requirements are being traced to.",
+                          "Check for invalid requirement traces.",
+                          "Check for links from deleted objects.",
+                          "Check for not linked Model/Code references." }
+string szReportName[] = { ".ValidReq.txt", ".InvalidReq.txt", ".DeletedObj.txt", ".NotLnkRef.txt" }
+int iChkValReq  = 0
+int iChkInvReq  = 1
+int iChkDelObj  = 2
+int iMaxSRDReport  = 3
+int iChkModRef  = 3
+int iMaxReport  = 4
+Stream report[iMaxReport]
+bool bRepRequest[iMaxReport]
+
+DBE select_proj     // Project to look for
+DBE report_select   // Reports to be generated
+DBE progress_list   // List box for system progress
+DBE report_prefix   // Report file prefix
+const Regexp MODEL_OR_CODE_REFERENCE_RE = regexp "(Model|Code) Ref"
+
+
+DBE list1
+int listlen = 0
+
+DBE			NameList
+
+string		allSDDnames[],	allSRDnames[]		// common lists of SDDs and SRDs in the project
+int			allSDDnum = 0,	allSRDnum = 0		// lengths of the lists
+
+int			SDDnum = 0,		SRDnum = 0			// number of selected SDDs and SRDs
+int			SDDselected[],	SRDselected[]		// numbers of selected modules in the common lists
+
+Baseline	SDDbslns[],		SRDbslns[]			// selected baselines (the order corresponds to the common list)
+string		SDDbslnames[],	SRDbslnames[]		// names of selected baselines
+Module		SDDs[],			SRDs[]				// opened modules
+
+DBE sddbl, srdbl
+string sddar[], srdar[]
+int sddver = 0, srdver = 0
+//###############################################
+//# Utility Functions
+//###############################################
+
+//***************************************************
+//* Checks if module name starts with correct prefix
+//***************************************************
+bool match_prefix(string module_name, string prefix) {
+    return (module_name[0:(length prefix) - 1] == prefix)
+}
+
+//***********************************************
+//* Returns an attribute type pointer for an 
+//* attribute name.
+//***********************************************
+AttrType get_type (string attr_name, Module m) {
+    AttrDef attr_ptr
+    AttrType attr_type_ptr
+
+    attr_ptr = find(m, attr_name)
+    if(null attr_ptr)	attr_type_ptr = null
+    else				attr_type_ptr = find(m, attr_ptr.typeName)
+    return attr_type_ptr
+}
+
+//***********************************************
+//* Returns the number of objects in the module
+//***********************************************
+int count_objects (Module m) {
+	int count = 0
+	Object o
+	for o in m do count++
+    return count
+}
+
+//***************************************************
+//* Returns TRUE if the object contains a Requirement
+//***************************************************
+bool Is_Requirement(Object check_obj) {
+	if (null(check_obj)) return false
+
+	bool dr = check_obj."Deferred Requirement"
+	if (dr)	return false
+
+	string txt    // Object text
+	RichText rt
+	txt = richText check_obj."Object Text"
+	for rt in txt do {
+		string w = rt.text
+
+		if (rt.bold) {
+			int ln = length(w)
+			while (ln >= 5 && w[0:0] <= " ") {
+				ln--
+				w = w[1:ln]
+			}
+			if (ln >= 5 && w[0:4] == "shall" && (ln == 5 || w[5:5] <= " ")) return true
+		}
+	}
+	return false
+}		
+
+//###############################################
+//# Main procedures
+//###############################################
+
+bool isLinkFromSDD(string name) {
+	int i
+	for (i = 0; i < SDDnum; i++) {
+		if (name == allSDDnames[SDDselected[i]]) return true
+	}
+	return false
+}
+
+void InsertList(Module m, Object o, string str) {
+	insert(list1, listlen++, str)
+	put(ListArr, m, ListArrSize, 0)
+	put(ListArr, o, ListArrSize++, 1)
+}
+
+void Process_SRD_Object(Module srd, Object check_obj) {
+	string  ObjTxt
+	bool	link_exists = false
+	bool	MR_link		= false
+	bool	IsReq		= Is_Requirement(check_obj)
+
+	string	toid = (identifier check_obj)
+    Link	L
+    for L in check_obj<-"*" do {
+		string modname = source(L)
+		if (isLinkFromSDD(modname)) {
+			Object so	  = source(L)
+			string fromid = (identifier so)
+			if (isDeleted(so)) {	// Link from deleted object
+				if (bRepRequest[iChkDelObj]) {
+					string req = IsReq ? "" : "not "
+					report[iChkDelObj] << "  " toid " Trace link from deleted object " fromid " exists for " req "reqirement object\n"
+					str = toid " link to " req "reqirement from deleted " fromid
+					InsertList(srd, check_obj, str)
+				}
+			}else{
+				link_exists = true
+				//str = so."Object Text"
+				//if ( (str[0:14] == "Model Reference") || (str[0:8] == "Code File") || (str[0:13] == "Code Reference")) MR_link = true
+				// Check for invalid links
+				ObjTxt = so."Object Text"
+				return (MODEL_OR_CODE_REFERENCE_RE ObjTxt)
+
+			if(bRepRequest[iChkInvReq] && !IsReq) {
+					report[iChkInvReq] << "  " toid " Trace link from " fromid " exists for not requirement object\n"
+					str = toid " link to not requirement from " fromid
+					InsertList(srd, check_obj, str)
+				}
+			}
+		}
+    }
+
+    // Check for missing traces to the requirements
+	if(bRepRequest[iChkValReq] && IsReq) {
+		if (!link_exists) {
+			report[iChkValReq] << "  " toid " No Trace links for reqirement\n"
+			str = toid " no links for reqirement"
+			InsertList(srd, check_obj, str)
+		}else if (!MR_link) {
+			report[iChkValReq] << "  " toid " No Trace links from Model Reference for reqirement\n"
+			str = toid " no MR-links for reqirement"
+			InsertList(srd, check_obj, str)
+		}
+    }
+}
+
+void Process_SRD_Module (Module srd, string module_name, int proj_num, DB db) {
+    AttrType attr_proj
+    Object	 check_obj
+    int		 num_obj        // Number of objects in module
+    int		 i, count_obj = 0  // Count of objects
+
+	current = srd
+///	setDefaultLinkModule(sddname "_Lnk")
+
+    progressRange(module_name, 0, 1)
+
+    num_obj = count_objects(srd)
+    if(num_obj != 0) progressRange(module_name, count_obj++, num_obj)
+
+    attr_proj = get_type(szProjectID, srd)
+
+    for(i = 0 ; i < iMaxSRDReport; ++i) {
+        if(bRepRequest[i]) {
+            report[i] << "\nSRD Module: " module_name "\n\n"
+            if(null attr_proj) report[i] << "  *****ERROR*****  Project " szProjectID " is not defined.\n"
+            if(num_obj == 0)   report[i] << "  *****ERROR*****  Module contains no Objects.\n"
+		}
+    }
+
+    if(!(null attr_proj) && (num_obj != 0) && !progressCancelled) {
+        for check_obj in srd do {
+            // Only look at objects in specified project
+            if(isMember(check_obj.szProjectID, attr_proj.strings[proj_num])) Process_SRD_Object(srd, check_obj)
+            progressStep(count_obj++)
+        }
+    }
+
+    for(i = 0 ; i < iMaxSRDReport; ++i) {
+        if(bRepRequest[i]) report[i] << "\nDone\n"
+    }
+}
+
+////////// check SDD 
+bool isLinkFromSRD(string name) {
+	int i
+	for (i = 0; i < SRDnum; i++) {
+		if (name == allSRDnames[SRDselected[i]]) return true
+	}
+	return false
+}
+
+void process_SDD_Module (Module sdd, string module_name, int proj_num, DB db) {
+    AttrType attr_proj
+    Object	 check_obj
+    int		 num_obj        // Number of objects in module
+    int		 i, count_obj = 0  // Count of objects
+
+///	setDefaultLinkModule(sddname "_Lnk")
+
+    progressRange(module_name, 0, 1)
+
+    num_obj = count_objects(sdd)
+    if(num_obj != 0) progressRange(module_name, count_obj++, num_obj)
+
+    attr_proj = get_type(szProjectID, sdd)
+
+	i = iChkModRef
+    report[i] << "\nSDD Module: " module_name "\n\n"
+    if(null attr_proj) report[i] << "  *****ERROR*****  Project " szProjectID " is not defined.\n"
+    if(num_obj == 0)   report[i] << "  *****ERROR*****  Module contains no Objects.\n"
+
+    if(!(null attr_proj) && (num_obj != 0) && !progressCancelled) {
+        for check_obj in sdd do {
+            // Only look at objects in specified project
+            if(isMember(check_obj.szProjectID, attr_proj.strings[proj_num])) {
+				string txt = check_obj."Object Text"
+				if ((txt[0:14] == "Model Reference") || (txt[0:8] == "Code File")) {
+					bool found = false
+					Link l
+					for l in check_obj->"*" do {
+						string fname = target(l)
+						Object o = target(l)
+						if (Is_Requirement(o) && isLinkFromSRD(fname)) {
+							found = true
+							break;
+						}
+					}
+					if (!found) {
+						txt = (identifier check_obj) " No trace links from Model/Code Reference"
+						report[iChkModRef] << (("  " txt) ".\n")
+						InsertList(sdd, check_obj, txt)
+					}
+				}
+			}
+            progressStep(count_obj++)
+        }
+    }
+	report[iChkModRef] << "\nDone\n"
+}
+
+Module OpenMod(string name, Baseline b, string bnm) {
+	//Module mod = read(name, false)
+	Module mod = read(name, true)
+	if (null mod) ack("Unable to read module " name)
+	if (!null(b)) {
+		//mod = load(mod, b, false)
+		mod = load(mod, b, true)
+		if (null mod) ack("Unable to load baseline " bnm " for module " name)
+	}
+	return mod
+}
+
+//***************************************************
+//* Checks one or more modules
+//***************************************************
+void go(DB db) {
+    string prefix = get report_prefix	// Retrieve data from user choices in dialog box
+    string report_filename
+    int rep_selected = get report_select
+    string mod_name
+    int file_num
+    int mask          // Mask for checking requirement sources
+    int i
+
+	delete(ListArr)
+	ListArr = create(100,2)
+	ListArrSize = 0
+	
+	while (listlen > 0) {
+		listlen--
+		delete(list1, listlen);
+	}
+
+    if (rep_selected == 0) {
+		ack ("No reports were requested, nothing to do.")
+		return
+	}
+
+	if (SDDnum == 0 && SRDnum == 0) {
+		ack ("No modules selected, nothing to do.")
+		return
+	}
+
+	int k
+	for (i = 0; i < SDDnum; i++) {
+		k =	SDDselected[i]
+		SDDs[i] = OpenMod(allSDDnames[k], SDDbslns[k], SDDbslnames[k])
+	}			
+	for (i = 0; i < SRDnum; i++) {
+		k =	SRDselected[i]
+		SRDs[i] = OpenMod(allSRDnames[k], SRDbslns[k], SRDbslnames[k])
+	}			
+
+    // Open report files for the requested checks
+    mask = 1
+    for(i = 0 ; i < iMaxReport ; ++i) {
+        if((rep_selected & mask) == mask) {
+            report_filename = (prefix szReportName[i])
+            if (!fileOverwriteOK_ report_filename) {
+               ack(("Unable to open file for writing: " report_filename))
+			   while (i > 0) {
+				   if(bRepRequest[i]) close report[i]
+				   i--
+				   return
+			   }
+            }
+            report[i] = write(report_filename)
+            report[i] << szSelections[i] "\n\n"
+            report[i] << "Project: " (name current Project) "\n\n"
+            bRepRequest[i] = true
+        } else {
+            bRepRequest[i] = false
+        }
+        mask *= 2
+    }
+
+    progressStart(db, "Trace Check Progress", "", 1)
+
+    int	proj_num = get select_proj
+	if (bRepRequest[iChkValReq] || bRepRequest[iChkInvReq] || bRepRequest[iChkDelObj]) {
+		// check SRDs
+		for (i = 0; i < SRDnum; i++) {
+			k =	SRDselected[i]
+			Process_SRD_Module(SRDs[i], (allSRDnames[k] "(" SRDbslnames[k] ")"), proj_num, db)
+		}
+	}
+
+	if (bRepRequest[iChkModRef]) {
+		// check SDDs
+		for (i = 0; i < SDDnum; i++) {
+			k =	SDDselected[i]
+			process_SDD_Module(SDDs[i], (allSDDnames[k] "(" SDDbslnames[k] ")"), proj_num, db)
+		}
+	}
+
+    progressStop
+
+    // Close the opened files
+    for(i = 0 ; i < iMaxReport ; ++i) {
+        if(bRepRequest[i]) close report[i]
+    }
+
+    // Close all open modules
+	Module cm
+    for cm in (current Project) do {
+        if(!(isVisible cm) && (type cm) == "Formal" ) close(cm)
+    }
+	setFocus(NameList)
+}
+
+///////// List of FileNames /////////
+DBE sddlst, srdlst
+
+void ShowNameList() {
+	while (noElems(NameList) > 0) delete(NameList, 0)
+
+	string name
+	int i, k, nl = 0
+	for (i = 0; i < SDDnum; i++) {
+		k = SDDselected[i]
+		name = allSDDnames[k] " (" SDDbslnames[k] ")"
+		insert(NameList, nl++, name)
+	}
+	for (i = 0; i < SRDnum; i++) {
+		k = SRDselected[i]
+		name = allSRDnames[k] " (" SRDbslnames[k] ")"
+		insert(NameList, nl++, name)
+	}
+}
+
+void Select_Names(DB db) {
+	string name
+	while (noElems(NameList) > 0) delete(NameList, 0)
+	int i, nl = 0
+	SDDnum = 0
+	int nn = noElems(sddlst)
+	for (i = 0; i < nn; i++) {
+		if (selected(sddlst, i)) SDDselected[SDDnum++] = i
+	}
+	SRDnum = 0
+	nn = noElems(srdlst)
+	for (i = 0; i < nn; i++) {
+		if (selected(srdlst, i)) SRDselected[SRDnum++] = i
+	}
+	ShowNameList()
+}
+
+void Select_Modules(DBE db) {
+	DB  addname = centered("Select Module")
+	string pn = "Select module(s) from the project: " name(current Project)
+	label(addname, pn)
+
+	sddlst = multiList(addname, "SDD modules", 5, allSDDnames, allSDDnum)
+	sddlst->"right"->"form"
+	srdlst = multiList(addname, "SRD modules", 5, allSRDnames, allSRDnum)
+	srdlst->"right"->"form"
+	ok(addname, "Select", Select_Names)
+
+	realize addname
+	int i
+	for (i = 0; i < SDDnum; i++) set(sddlst, SDDselected[i], true)
+	for (i = 0; i < SRDnum; i++) set(srdlst, SRDselected[i], true)
+
+	block addname
+	setFocus(NameList)
+}
+
+// select baseline
+DBE bllst
+Baseline SelBaseLine[]
+int selmodnum
+Module bmod
+
+void Baseline_Selected(DB db) {
+	int i, k, ln = noElems(bllst)
+	Baseline b
+	string	 name
+	for (i = 0; i < ln; i++) {
+		if (selected(bllst, i)) {
+			b = SelBaseLine[i]
+			name = (i==0) ? "current" : (major b) "." (minor b) ""
+			if (selmodnum < SDDnum) {
+				k = SDDselected[selmodnum]
+				SDDbslns[k]		= b
+				SDDbslnames[k]	= name
+			}else{
+				k = SRDselected[selmodnum-SDDnum]
+				SRDbslns[k]		= b
+				SRDbslnames[k]	= name
+			}
+			ShowNameList()
+			break;
+		}
+	}
+}
+
+void Select_Baseline(DBE db) {
+	int i, sel = -1
+	int ln = noElems(NameList)
+	for (i = 0; i < ln; i++) {
+		if (selected(NameList, i)) {
+			sel = i
+			break;
+		}
+	}
+
+	if (sel >= 0) {
+		DB  blname = centered("Select Baseline")
+		string name
+		if (sel < SDDnum) name = allSDDnames[SDDselected[sel]]
+		else			  name = allSRDnames[SRDselected[sel-SDDnum]]
+		string pn = "Select baseline for the module: " name
+		label(blname, pn)
+		
+		bmod = read(name, false)
+		if (null bmod) {
+			ack("Module can not be opened")
+			return
+		}
+		selmodnum = sel
+
+		int n = 0
+		Baseline b
+		for b in bmod do n++
+		string bs[n+1]
+		Baseline sbl[n+1]
+		SelBaseLine = sbl
+		n = 0
+		SelBaseLine[0] = null
+		bs[n++] = "Current module"
+		for b in bmod do	{
+			SelBaseLine[n] = b
+			bs[n++] = (major b) "." (minor b) " " (suffix b) " " (annotation b)
+		}
+		bllst = list(blname, "", 5, bs, n)
+		bllst->"right"->"form"
+
+		ok(blname, "Select", Baseline_Selected)
+
+		Module curmod = current Module
+		block blname
+		current = curmod
+		close(bmod)
+
+		setFocus(NameList)
+	}
+}
+/////////////////////////////////
+
+void Go_to_obj() {
+	int i
+	for i in list1 do {
+		Module m = get(ListArr, i, 0)
+		Object o = get(ListArr, i, 1)
+		if(!(isVisible m)) {
+			ack "Module is not visible"
+			return
+		}
+		current = m
+		current = o
+		refresh current
+		break
+	}
+}
+void Go_Obj(DB db) {
+	Go_to_obj()
+}
+void Do_Noth(DBE dbe) {}
+void Do_Go_Obg(DBE dbe) {
+	Go_to_obj()
+}
+
+
+//***********************************************************
+//* Create the main options dialog box for the program
+//***********************************************************
+void display_main_options (void) {
+    DB main_options     // Main options dialog box
+    string filename
+    AttrType proj_type
+
+	if((null current Module)) {
+		ack "Please run from an open module."
+		halt()
+	}
+    main_options = centered("SRD Traceability Checks")
+
+    proj_type = get_type( szProjectID, (current Module))
+    string proj_list[proj_type.size]
+
+	int i
+    for(i = 0 ; i < proj_type.size ; ++i) proj_list[i] = proj_type.strings[i]
+
+    select_proj = choice(main_options, "Select Project: ", proj_list, 0)
+
+	// List of all SDD & SRD modules in the project
+	string modname
+    for modname in current Project do {
+		if ((type module(modname)) == "Formal") {
+			if		 (match_prefix(modname, szSDDModuleID)) {
+				allSDDnum++
+			}else if (match_prefix(modname, szSRDModuleID)) {
+				allSRDnum++
+			}
+		}
+	}
+	string ar1[allSDDnum], ar2[allSRDnum]
+	string ar3[allSDDnum], ar4[allSRDnum]
+	allSDDnames = ar1
+	allSRDnames = ar2
+	SDDbslnames = ar3
+	SRDbslnames = ar4
+
+	Module ma1[allSDDnum], ma2[allSRDnum]
+	SDDs = ma1
+	SRDs = ma2
+		
+	Baseline b1[allSDDnum], b2[allSRDnum]
+	SDDbslns = b1
+	SRDbslns = b2
+
+	for (i = 0; i <	allSDDnum; i++) {
+		SDDbslns[i]	   = null
+		SDDbslnames[i] = "current"
+	}
+	for (i = 0; i <	allSRDnum; i++) {
+		SRDbslns[i]    = null
+		SRDbslnames[i] = "current"
+	}
+		
+	string module_name = ((current Module)."Name" "")
+	sddname = ""
+	int ln = length(module_name) - 3;
+	for (i = 0; i < ln; i++) {
+		if (module_name[i:i+2] == "SRD") {
+			if (i > 0) {
+				srdname = module_name
+				sddname = module_name[0:i-1] "SDD" module_name[i+3:ln+2]
+				break;
+			}
+		}else if (module_name[i:i+2] == "SDD") {
+			if (i > 0) {
+				srdname = module_name[0:i-1] "SRD" module_name[i+3:ln+2]
+				sddname = module_name
+				break;
+			}
+		}
+	}
+
+	SDDnum = 0
+	SRDnum = 0
+
+	int	ia1[allSDDnum], ia2[allSRDnum]
+	SDDselected = ia1
+	SRDselected = ia2
+	string initlist[2]
+
+	int sddind = 0, srdind = 0;
+    for modname in current Project do {
+		if ((type module(modname)) == "Formal") {
+			if		 (match_prefix(modname, szSDDModuleID)) {
+				if (SDDnum == 0 && sddname == modname) SDDselected[SDDnum++] = sddind
+				allSDDnames[sddind++] = modname
+			}else if (match_prefix(modname, szSRDModuleID)) {
+				if (SRDnum == 0 && srdname == modname) SRDselected[SRDnum++] = srdind
+				allSRDnames[srdind++] = modname
+			}
+		}
+	}
+	if (SDDnum > 0) initlist[0]		 = sddname
+	if (SRDnum > 0) initlist[SDDnum] = srdname
+	 
+	string es[] = {}
+	NameList = list(main_options, "Modules to be checked", 6, initlist, SDDnum+SRDnum)
+
+	DBE x,y
+	x = button(main_options, "Select Modules",	Select_Modules)
+	y =	button(main_options, "Select Baseline", Select_Baseline)
+	y->"top"->"aligned"->x
+	y->"left"->"flush"->x
+	
+	separator main_options
+
+    label(main_options, "Choose which reports to generate:")
+    report_select = verticalCheckBox(main_options,"", szSelections, 0)
+
+    label(main_options, "Report file prefix:")
+
+    filename = fileGoodName_((name current Project), "", "")
+    report_prefix = fileName(main_options, filename)
+
+	list1 = list(main_options, "List of errors", 5, es)
+	set(list1, Do_Noth, Do_Go_Obg)
+
+	apply(main_options, "Do Check", go)
+	apply(main_options, "Go to Object", Go_Obj)
+
+    show main_options
+}
+
+Module curmod = current Module
+display_main_options
+current = curmod

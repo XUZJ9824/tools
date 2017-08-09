@@ -1,0 +1,1259 @@
+@echo on
+
+REM change workset:
+dmcli.exe SCWS "CMU:BUILD_BEIJING_ATC" /DIR="c:" /NODEFAULT /NOCHECK
+
+del /F /S /Q  c:\Epic_Atc_Code
+
+REM get items:
+
+dmcli.exe FI "CMU:A393.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\buildtag.sh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A394.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNApp.mk" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A395.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNAppLib.mk" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A396.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsnLib.mk" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A397.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\ATSCommon.mk" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A398.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\ATSCommonLib.mk" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A399.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN.mk" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42418.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\AtsCore.dsw" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42419.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\build.bat" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42420.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\deos-compile-note.txt" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42421.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\API\src\Ats_core_app_atn.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42422.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNAppController\inc\AtnAppController.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42423.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\src\CM_CmnUtils.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42424.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\pd_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42425.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\AAI.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42426.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\message_data_file\CPDLC_INP_DATA.txt" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42427.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\ansi.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42428.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\dll\ansi.dll" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42429.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\abomapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42430.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\abomuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42431.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\align1.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42432.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\align2.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42433.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\align4.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42434.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\align8.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42435.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\ansidefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42436.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\bitkapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42437.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\bituk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42438.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\crc.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42439.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\crc16.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42440.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\ctype.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42441.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\debug.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42442.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\debugapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42443.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\deos.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42444.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\deosapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42445.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\deoskern.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42446.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\deosname.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42447.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\deosuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42448.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\eventapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42449.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\eventuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42450.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\excptapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42451.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\excptuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42452.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\executuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42453.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\extnsapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42454.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\fstream.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42455.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\inetaddr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42456.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\intapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42457.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\intuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42458.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\ipcapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42459.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\ipcuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42460.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\kernintfc.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42461.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\mem-old.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42462.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\mem.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42463.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\memapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42464.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\memapiuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42465.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\memutils.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42466.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\mutexapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42467.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\mutexuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42468.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\pack.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42469.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\palintfc.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42470.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\parapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42471.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\platapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42472.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\procapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42473.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\procuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42474.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\produce.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42475.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\resapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42476.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\res_uk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42477.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\saldefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42478.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\semaapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42479.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\semauk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42480.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\socket.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42481.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\socketapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42482.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\sockobj.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42483.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\statapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42484.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\status.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42485.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\stdio.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42486.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\stdlib.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42487.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\string-old.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42488.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\string.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42489.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\sysapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42490.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\sysapiuk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42491.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\systyp.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42492.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\thrdapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42493.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\threaduk.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42494.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\timeout.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42495.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\transport.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42496.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\transportdefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42497.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\unalign.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42498.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\unpack.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42499.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\usersock.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42500.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\videobuf.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42501.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\vt100.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42502.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\dll\mtl.dll" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42503.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\dll\sal.dll" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42504.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\include\imageapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42505.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\include\kernifar.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42506.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\include\pageattr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42507.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\include\resapiar.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42508.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\deosname.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42509.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\kernel.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42510.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\micsupp.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42511.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\mtl.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42512.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\sal.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42513.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\x86\lib\microsoft\video.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42514.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\fhm\inc\FHM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42515.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\fhm\inc\FHMdefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42516.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\fhm\lib\x86\FHMAPI.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42517.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\fss\inc\FSSio.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42518.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\fss\x86\lib\FSSPrim.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42519.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\pdd\inc\pddapi.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42520.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\pdd\inc\pddtyp.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42521.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\pdd\inc\pddtypImp.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42522.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\pdd\x86\lib\pddapi_m.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42523.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\API\src\Ats_core_com_atn.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42524.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNApp.dsp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42525.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNApp.dsw" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42526.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNAppController\src\AtnAppController.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42527.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\inc\CM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42528.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\inc\CMAppCtrl.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42529.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\inc\CMAppIF.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42530.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\inc\CMN_CM_CPDLC_glob.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42531.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\inc\CM_CmnUtils.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42532.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\inc\cm_globals.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42533.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\src\CMAppCtrl.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42534.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\src\CMAppIF.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42535.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Listener\inc\cm_lsnrfsm.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42536.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Listener\src\CM_LsnrFSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42537.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\User\inc\CM_UserFSM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42538.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\User\src\CM_UserFSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42539.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\src\pd_DynBitString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42540.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\src\pe_ObjectIdentifier.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42541.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\Common\inc\ATC_CmnUtils.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42542.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\Common\src\ATC_CmnUtils.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42543.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\inc\CPDLC.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42544.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\inc\CPDLCAppIF.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42545.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\inc\CpdlcMsgEle.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42546.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\inc\CPDLC_Cmn_Utils.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42547.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\src\CPDLC.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42548.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\src\CPDLCAppIF.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42549.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\src\CpdlcMsgEle.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42550.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\Common\src\CPDLC_Cmn_Utils.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42551.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\MsgCtrl\inc\CPDLC_MSG_FSM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42552.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\MsgCtrl\src\CPDLC_MSG_FSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42553.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\inc\CPDLC_LS_FSM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42554.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\inc\CPDLC_USR_FSM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42555.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\src\CPDLC_LS_FSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42556.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\src\CPDLC_MSG_VAL.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42557.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\src\CPDLC_USR_FSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42558.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIDrvUsr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42559.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIPrmtvQueueMngr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42560.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIUsrApp.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42561.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIUsrExtIFDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42562.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIUsrMemoryMngr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42563.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIUsrPort.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42564.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\inc\DSIUsrPrmtvProc.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42565.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIDrvUsr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42566.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIPrmtvQueueMngr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42567.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIUsrApp.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42568.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIUsrMemoryMngr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42569.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIUsrPort.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42570.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIUsrPrmtvProc.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42571.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Asn1_atn_cpdlc_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42572.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Asn1_fans_cpdlc_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42573.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Asn1_super_cpdlc_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42574.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\AtsCommonDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42575.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_app_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42576.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_com_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42577.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_control_point.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42578.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_iface_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42579.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_platform_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42580.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_proxy_app_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42581.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_proxy_com_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42582.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_proxy_platform_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42583.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\src\Ats_core_app_common.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42584.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\src\Ats_core_com_common.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42585.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\src\Ats_core_platform.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42586.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\ATSCommon.dsp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42587.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\ATSCommon.dsw" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42588.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommLink\src\TransportMechanism.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42589.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\CommonASNLib.dsp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42590.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_RelativeOID.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42591.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_identifier.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42592.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_RelativeOID.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42593.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\rtevalstub.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42594.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\rtUtil.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42595.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonUtility\src\EventQueue.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42596.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonUtility\src\FifoQueue.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42597.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonUtility\src\StateMachine.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42598.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonUtility\src\Timer.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42599.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\ACARSConvergenceFunction.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42600.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\API.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42601.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\ATNAppController.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42602.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\ATNATC.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42603.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\ATSProxy.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42604.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\BaseClasses.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42605.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\CommLink.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42606.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\CommonASN1.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42607.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\DSIDriver.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42608.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\DSIDriverProvider.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42609.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\FANSADS.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42610.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\FANSATC.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42611.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\Platform.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42612.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\SeamlessManager.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42613.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\UtilityClasses.xml" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42614.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIApp.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42615.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSICmnPrmtvDefs.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42616.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIDrv.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42617.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIMemoryMngr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42618.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIPort.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42619.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIPrmtvProc.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42620.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSISeqMngr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42621.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\AtsCoreSyncGroupIDDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42622.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\AtsScheduler.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42623.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\Ats_core_app.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42624.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\Ats_core_com.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42625.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\Ats_core_platform.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42626.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSIApp.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42627.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSICmnCfgDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42628.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSICmnExtIFDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42629.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSICmnPrmtvDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42630.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSIDrv.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42631.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSIMemoryMngr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42632.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSIPort.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42633.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSIPrmtvProc.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42634.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSISeqMngr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42635.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\EventQueue.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42636.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\FaultMngr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42637.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\FifoQueue.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42638.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\seamless_manager.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42639.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\StateMachine.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42640.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\Timer.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42641.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\TraceMngr.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42642.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\TransportMechanism.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42643.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Platform\src\AtsScheduler.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42644.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Platform\src\FaultMngr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42645.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Platform\src\TraceMngr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42646.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\SeamlessManager\seamless_manager.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42647.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\ATNApp.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42648.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\ATNApp_d.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42649.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\AtnAsn.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42650.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\AtnAsn_d.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42651.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\ATSCommon.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42652.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\ATSCommon_d.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42653.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\CommonASNLib.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42654.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\lib\CommonASNLib_d.lib" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42655.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\epic_atc.dsp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42656.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\Epic_Atc.dsw" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42657.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\atcmsgs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42658.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\atc_disp_fmt.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42659.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\ats_core_hmi_if.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42660.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\end_of_flight_FSM.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42661.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\EPIC_hmi_api.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42662.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\EPIC_HMI_global_var.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42663.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\accumcrc.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42665.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\atcFacil.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42666.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\atcmsgs.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42667.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\atcsizeof.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42668.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\atc_disp_fmt.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42669.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\ats_core_hmi_if.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42670.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\coredb.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42671.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\Cpd2Text.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42672.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\crecmsgs.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42674.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\dbvrinit.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42675.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\DBVRLIST.C" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42676.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\display.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42677.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\end_of_flight_FSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42678.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\EPIC_hmimain.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42679.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\EPIC_mcduprotocol.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42680.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\EPIC_oooistate.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42681.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\EPIC_scratchpad.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42682.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\frmtdbf.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42683.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\frmtdbv.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42684.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\globcore.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42685.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\mcductrl.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42686.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\prmptmsg.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42687.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\val_fmt.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42688.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\main\src\main.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42689.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\AC\EPIC_AC_Aircraft_Config.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42690.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\AC\EPIC_AC_Aircraft_Config.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42691.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Comm_Var.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42692.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Consume_BI_Parameters.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42693.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Consume_BI_Parameters.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42694.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Produce_BI_Parameters.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42695.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Produce_BI_Parameters.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42696.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\CD\AtcAta_PddKey.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42697.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\CD\EPIC_CD_MCDU_Protocol.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42698.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\CD\EPIC_CD_MCDU_Protocol.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42699.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\DH\EPIC_DH_DB_Handler.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42700.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\DH\EPIC_DH_DB_Handler.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42701.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\DH\EPIC_DH_User.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42702.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\DH\EPIC_DH_User.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42706.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FH\EPIC_FH_Fault_State_Machine.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42707.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FH\EPIC_FH_Fault_State_Machine.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42708.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FH\EPIC_FH_Manager.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42709.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FH\EPIC_FH_Manager.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42710.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FH\EPIC_FH_produce_cmc_values.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42711.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FH\EPIC_FH_produce_cmc_values.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42712.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FSS\EPIC_ATC_UPDATE.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42713.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FSS\EPIC_ATC_Update.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42714.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FSS\EPIC_ATC_UPDATE_Queue.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42715.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\FSS\EPIC_ATC_UPDATE_Queue.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42716.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\IT\EPIC_IT_Process.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42717.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\IT\EPIC_IT_Process.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42718.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\PI\EPIC_PI_Printer_Formatter.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42719.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\PI\EPIC_PI_Printer_Formatter.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42720.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\PI\EPIC_PI_Printer_Socket.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42721.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\PI\EPIC_PI_Printer_Socket.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42722.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\PI\EPIC_PI_Print_Queue.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42723.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\PI\EPIC_PI_Print_Queue.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42731.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\ats_core_if.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42736.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_CRC_Calculation.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42738.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_ATCVersion.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42739.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_Ats_proxy_app.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42740.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_Ats_proxy_com.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42741.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_Ats_proxy_platform.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42742.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_exception_handler_api.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42744.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_telnetprint.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42745.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_telnetprint_api.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42746.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EPIC_thread_monitor_api.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42748.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\EXTGLOB1.H" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42753.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\ISO_5.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42765.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\Types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42766.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\amp_isr.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42767.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\ats_core_if.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42768.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\corehook.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42769.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_CRC_Calculation.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42770.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_Ats_proxy_app.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42771.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_Ats_proxy_com.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42772.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_Ats_proxy_platform.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42773.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_exception_handler.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42775.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_telnetprint.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42776.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_thread_monitor.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42777.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_trace.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42778.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\checklic.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42779.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\pu_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42780.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\desk\include\hash.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42781.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\CmAsnLib.dsp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42782.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\CMMessage.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42783.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\pe_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42784.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\rt_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42785.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\src\CMMessage.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42786.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\src\CPDLCMessageSetVersion1.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42787.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\asn1CharSet.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42788.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\asn1per.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42789.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\asn1type.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42790.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_BitString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42791.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_common.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42792.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_ConsInt16.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42793.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_ConsInt8.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42794.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_ConstrainedString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42795.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_ConsUInt16.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42796.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_ConsUInt8.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42797.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_ConsUnsigned.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42798.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pd_OctetString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42799.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_BitString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42800.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_common.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42801.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_ConsInteger.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42802.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_ConstrainedString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42803.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_ConsUnsigned.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42804.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_NonNegBinInt.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42805.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_OctetString.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42806.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pe_SmallNonNegWholeNumber.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42807.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pu_addSizeConstraint.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42808.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pu_alignCharStr.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42809.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pu_checkSize.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42810.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pu_common.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42811.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\pu_internal.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42812.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\rtconv.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42813.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\CommonASN\src\rtctype.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42814.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\asn1intl.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42815.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\atcfrmt.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42816.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\rtctype.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42817.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\coredb.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42818.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\atnprint.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42819.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\atnscrn.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42820.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\src\converta.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42864.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\ext_glob.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42867.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\msgproc.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42869.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\proto.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42870.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\pub429.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42872.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\syshook.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42873.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\inc\syshook1.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42874.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\atnsctrl.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42875.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\delete.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42880.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\build.bat" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42891.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42892.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\BI\EPIC_BI_Interface.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42895.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\DOA\EPIC_DOA.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42896.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\io\DOA\EPIC_DOA.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A42993.A-SRC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\hmi\inc\EPIC_HMI_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5938.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\TAGS" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5939.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\ATS_Core_ Sync_Groups_ATN_CM.xls" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5940.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\Context Diagrams\PM_CM_Abstract_Context.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5941.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\cm_v1.asn" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5942.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\CmAsnLib.plg" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5943.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\libs" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5944.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DesignData\ATS_Core_Module_Architecture.EAP" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5945.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\config\atcp.config" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5946.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\config\AtcpEpic_bench-PM.mdb" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5947.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\config\AtcpEpic_bench-PII.mdb" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5948.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\config\files.cfs" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5952.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\Context Diagrams\PM_CM_Context_External.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5953.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\Context Diagrams\PM_CM_Context_Internal.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5954.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\Context Diagrams\PM_CM_HIER.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5955.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\FSMs\PM_CM_LS_FSM.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5956.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\FSMs\PM_CM_USER_FSM.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5957.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\MSCs\PM_CM_MSC_FMC_Startup.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5958.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\MSCs\PM_CM_MSC_Prov_To_Usr_DSI_SYNC.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5959.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\DesignData\MSCs\PM_CM_MSC_Usr_To_Prov_DSI_SYNC.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5960.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\CPDLC_msgdef.asn" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5961.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\FSMs\PMCPDLC_LS_FSM.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5962.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\FSMs\PMCPDLC_Msg_Ctrl_FSM.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5963.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\FSMs\PMCPDLC_USR_FSM.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5964.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\PMCPDLC_External_Context.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5965.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\PMCPDLC_Internal_Context.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5966.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\PMCPDLC_Msg_Ctrl_Hier.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5967.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\DesignData\PMCPDLC_Session_Ctrl_Hier.cdr" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+
+
+dmcli.exe FI "CMU:A5968.A-DOC;" /USER_FILENAME="c:\Epic_Atc_Code\epic_atc.plg" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+

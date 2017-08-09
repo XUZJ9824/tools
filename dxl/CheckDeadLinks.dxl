@@ -1,0 +1,129 @@
+/* 	Detect Deadlinks in a module or a folder - any object has outlinks but 
+    already deleted will be listed in final report.
+
+	Copyright April 2015 Honeywell
+	Description: Used to detect deadlink for the current module or modules in 
+                 current folder. Module name, deadlink count, deadlink object 
+                 are all included in the result file of the path specified below. 
+                 The modules in sub_folders are not detected.
+	
+    Instructions:
+	1. To check for a single module, just open a module and run the script from the module.
+	2. To check modules in a folder, just select a folder, then run the script.
+	3. Find final report in c:/tmp/DetectResults.txt or c:/tmp/DetectResults.xls.
+	
+	REVISION HISTORY:
+	Date         Name           Description
+	-----------  -------        -----------
+	27-Feb-2015  Chen Minghui    Initial draft                                  */
+
+/********************variables*************************************************/	
+	Object o = null
+	int deaklinkobjcount = 0
+	int deaklinkcount = 0
+	int tmpcount = 0
+	string s = null
+	Module m   = null
+	Item i 
+	Folder f = null
+	int moddeadcont = 0
+	int modcont = 0
+	Stream Output
+	string dirname = "c:\\tmp\\"
+
+/********************Main*************************************************/	
+    //--------  check for pre-conditions   ------------
+	if (!fileExists_(dirname)".")
+	{
+		mkdir(dirname)
+	}
+	Output = write "c:/tmp/DetectResults.xls"
+	
+	m = current Module
+	if (null m) then
+	{
+		//------  detect in a foler ---------
+		Output << "Module Name\t" "Deadlink Object\t" "Deadlink Count\n"
+		f = current Folder
+		if (null f) then
+		{
+			warningBox "Please run from a selected folder or an open module."
+			halt
+		}
+		
+		print "Detection for folder start ...\n\n"
+		for i in f do
+		{
+			s = name i
+			m = read(s, false)
+
+			//--------  check for module   ------------
+			if (null m) then
+			{
+				print "Subfolder " s " not included\n"
+				continue
+			}
+		  
+			Output << m."Name" "\t"   
+			showDeletedObjects true
+			deaklinkobjcount = 0
+			
+			Filter filt = hasLinks(linkFilterBoth, "*") 
+			set(m, filt) 
+			filtering on 
+
+			for o in m do {			
+				//check if the object has deleted, if not, continue
+				if (!isDeleted o){
+					continue
+				}
+
+				deaklinkobjcount++
+				Output << "  " identifier o
+			}
+			Output << "\t" deaklinkobjcount "\n"
+			
+			if(deaklinkobjcount != 0) moddeadcont++
+			
+			filtering off
+			showDeletedObjects false
+			modcont++
+			if (modcont%50 == 0)
+			{
+				print  modcont " modules Detected...\n"
+			}
+
+		}
+		Output << "Total deadlink module count:" moddeadcont ".Total module count is " modcont ".\n"
+		print "Detected module count is " modcont ". " moddeadcont " modules have deadlink.\n"
+	}
+	else{
+		//------------ detect for single module ------------
+		print "Detection for single module start ...\n\n"
+		print "The deadlink count of Module " m."Name" ": " 
+		Output	 << "The deadlink module " m."Name" ":\n" 	
+		showDeletedObjects true
+
+		Filter filt = hasLinks(linkFilterBoth, "*") 
+		set(m, filt) 
+		filtering on 
+		
+		for o in m do {				
+			//check if the object has deleted, if not, continue
+			if (!isDeleted o){
+				continue
+			}
+
+			deaklinkcount++
+			Output << "  " identifier o "\n"
+		}
+		Output << " Total deadlink object count of current Module is " deaklinkcount ".\n"
+		filtering off
+		showDeletedObjects false
+		print deaklinkcount ".\n"
+	}
+
+	print "See final report from c:/tmp/DetectResults.xls.\n"
+	print "\nTask Done.\n"
+
+

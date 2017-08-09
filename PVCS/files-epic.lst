@@ -1,0 +1,99 @@
+
+FI "CMU:A42421.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\API\src\Ats_core_app_atn.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42423.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Common\src\CM_CmnUtils.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42424.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\pd_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42523.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\API\src\Ats_core_com_atn.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42526.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\ATNAppController\src\AtnAppController.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42536.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\Listener\src\CM_LsnrFSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42538.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CM\User\src\CM_UserFSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42555.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\src\CPDLC_LS_FSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42557.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CPDLC\SessCtrl\src\CPDLC_USR_FSM.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42565.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIDrvUsr.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42567.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIUsrApp.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42570.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\DSIUser\src\DSIUsrPrmtvProc.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42572.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Asn1_fans_cpdlc_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42576.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_com_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42578.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_iface_types.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42579.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\Ats_core_platform_interface.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42614.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIApp.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42615.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSICmnPrmtvDefs.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42616.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIDrv.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42618.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\DSIDriverCommon\src\DSIPort.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42624.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\Ats_core_com.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42625.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\Ats_core_platform.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42627.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSICmnCfgDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42628.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\DSICmnExtIFDefs.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42638.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\seamless_manager.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42646.A-SRC;3" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\SeamlessManager\seamless_manager.c" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42771.A-SRC;8" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\utilities\src\EPIC_Ats_proxy_com.cpp" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42778.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\checklic.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42779.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\pu_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42783.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\pe_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42784.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATN_App_VOB\CmAsn\inc\rt_common.hh" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A42787.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\API\Include\asn1CharSet.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed
+
+FI "CMU:A43453.A-SRC;2" /USER_FILENAME="c:\Epic_Atc_Code\sourcecode\atscore\DL_ATS_Common_VOB\Include\AtsCoreVersionInfo.h" /NOEXPAND /OVERWRITE /WORKSET="CMU:_WORK_MAIN_EPIC_ATN"
+Fetch Item - Operation completed

@@ -1,0 +1,536 @@
+// ChangeBars - Prompts for two baselines for a module and compares them producing a file of the absolute numbers of the changed items.
+
+/*
+
+Prompts for two baselines for a module and compares them, producing a file of the
+absolute numbers of the changed items. Created from the
+Telelogic example baseline.dxl included with DOORS 6.0.
+
+Change History:
+12/10/2003	DLL	Creation
+02/05/2004  CSHK  Modification According to AESS requirements. Handles only 
+					 changes in the current module and not linked modules.
+
+*/
+
+pragma runLim,0
+#include <utils/doctools/rtfattr.inc>
+#include <utils/doctools/itfutil.inc>
+
+void showDialog(DB dbDialog)
+
+// Attributes to compare for change bars. sAttrAll are the attributes
+// that should be compared differently for embedded objects. aAttrAdd
+// are the attributes that need to be checked for the main object
+// regardless if it is embedded or not.
+const string sAttrAll[] = {"Object Text"}
+const string sAttrAdd[] = {"Object Text"}
+
+
+DB dbMain // Main Dialog
+DBE dbeFilenameEntry
+DBE dbeList1, dbeList2   // two global lists containing the baseline
+                   // selected (or current version)
+int iMinAbsNum = 0
+int iMaxAbsNum = 0
+
+const string sReqType	= "Requirement Type"
+const string sNotAReq	= "Not a Requirement"
+//string sEmbLinkMod = "/AESS/98 Link Modules/Satisfies"
+string sEmbLinkMod = "*"
+Module mStartMod
+Skip skpBaselines   // cache current baselines
+Skip skpBsln1 = create
+Skip skpBsln2 = create
+Skip skpEmbAbsNum = create
+Skip skpEmbCompare = create
+
+string sInitFilename	// contains the name of the output file name
+string currModName = fullName(current Module)
+
+// Date of the start baseline so that we can compare it with the
+// last modified on date for embedded objects.
+Date dStartDate
+
+// The stream for the output file
+Stream stmOutput = null
+Stream stmDelOutput = null
+string sNextIDLatestBaseline = ""
+string sDelID = ""
+
+bool flagDel = false
+
+mStartMod = current
+string sModName = (current Module)."Name"
+sInitFilename = "C:\\" sModName "_Changes.txt"
+
+// contains the name of the deletions-list file name
+string sDelFilename = "C:\\" sModName "_Deletions"
+
+// -------------------------------------------------------------------------------
+// getBodyText()
+//
+// This routine returns the Object Text attribute.
+//
+// Inputs:	o	The object containing the heading.
+//
+// Output:	The object text.
+// -------------------------------------------------------------------------------
+string getBodyText(Object o) 
+{
+	string sObjText = null
+
+	if (hasCopyableText o) {
+		sObjText = richTextWithOle o.ALongText
+		if (sObjText == cEmptyCell) {
+			sObjText = null
+		}
+	}
+	
+	return sObjText
+}
+
+
+// -------------------------------------------------------------------------------
+// compareAttr()
+//
+// Compares two objects for the provided list of attributes to see if they are
+// the same. If the attribute list incules the object text it
+// gets the object text in RTF so that OLE objects may also be checked.
+//
+// Inputs:	o1	The first object to compare.
+// 			o2	The second object to compare.
+// 			sAttrList	The list of attributes being checked.
+//
+// Output:	True if the attributes compare, false otherwise.
+// -------------------------------------------------------------------------------
+bool compareAttr(Object o1, Object o2, string sAttrList[])
+{
+	int i
+	bool bAttrMatch = true
+	Date d1 = o1."Last Modified On"
+	Date d2 = o2."Last Modified On"
+
+	// If Object has been modified since last baseline, check
+	// the attributes we are interested in, otherwise return true
+	if (d1 != d2) {
+		for (i = 0 ; (i < (sizeof sAttrList)) && bAttrMatch ; ++i) {
+			string s1, s2
+		
+			if(sAttrList[i] == "Object Text") {
+				s1 = getBodyText(o1)
+				s2 = getBodyText(o2)
+			} else {
+				s1 = o1.sAttrList[i]
+				s2 = o2.sAttrList[i]
+			}
+			
+			bAttrMatch = bAttrMatch && (s1 == s2)
+		}
+	}
+	
+	return bAttrMatch
+}
+
+// -------------------------------------------------------------------------------
+// compareAttr()
+//
+// This overloads the previous function, it has an additional date for a module
+// start date. This is for embedded objects, if the last modified date is earlier
+// than the date the of the start baseline, we do not want to mark it as changed.
+//
+// Inputs:	o1	The first object to compare.
+// 			o2	The second object to compare.
+// 			sAttrList	The list of attributes being checked.
+//			dPrevDate	Date to be mark as not changed if modified before.
+//
+// Output:	True if the attributes compare, false otherwise.
+// -------------------------------------------------------------------------------
+bool compareAttr(Object o1, Object o2, string sAttrList[], Date dPrevDate)
+{
+	bool bAttrMatch = true
+	Date d2 = o2."Last Modified On"
+
+	// If Object has been modified since start baseline do the usual checks,
+	// otherwise return true
+	if (d2 >= dPrevDate) {
+		bAttrMatch = compareAttr(o1, o2, sAttrList)
+	}
+	
+	return bAttrMatch
+}
+
+// -------------------------------------------------------------------------------
+// getAbsNums()
+//
+// Builds a skip list which maps absoulte numbers to object handles for a module.
+//
+// Inputs:	m	The module to map.
+//
+// Output:	The skip list.
+// -------------------------------------------------------------------------------
+Skip getAbsNums(Module m)
+{
+	Object o
+	Skip skpRet = create
+
+	for o in m do {
+		int iAbsNum = o."Absolute Number"
+		put(skpRet, iAbsNum, o)
+		
+		// Set Max and Min Absolute Number for the set
+		if((iMinAbsNum > iAbsNum) || (iMinAbsNum == 0)) {
+			iMinAbsNum = iAbsNum
+		}
+		if(iMaxAbsNum < iAbsNum) {
+			iMaxAbsNum = iAbsNum
+		}
+	}
+
+	return skpRet
+}
+
+// -------------------------------------------------------------------------------
+// isRequirement()
+//
+// This routine just gives a true or false on whether an
+// object is a requirement
+//
+// Inputs:	o	The object to check.
+//
+// Output:	True if object is a requirement, false otherwise.
+// -------------------------------------------------------------------------------
+bool isRequirement(Object o) {
+	bool retValue = true
+	int i
+	
+	if (exists(attribute sReqType)) {
+		if (canRead o.sReqType) {
+			string reqType = o.sReqType
+			retValue = ((reqType != sNotAReq) && (reqType != ""))
+		}
+	} else {
+		retValue = false
+	}
+	
+	return retValue
+}
+	
+// -------------------------------------------------------------------------------
+// compareFn()
+//
+// Gets the baselines to compare from the DBE, and compares the specified objects
+// for each attribute.
+//
+// Inputs:	dbe	The window handle to get the baseline information from.
+//
+// -------------------------------------------------------------------------------
+void compareFn ()
+{
+	string sBslnName1, sBslnName2
+	Skip skpAbsNum1, skpAbsNum2
+	Module mBsln1, mBsln2
+	
+	// Create skip list of absolute numbers to objects
+	find(skpBsln1, mStartMod, mBsln1)
+	find(skpBsln2, mStartMod, mBsln2)
+	skpAbsNum1 = getAbsNums mBsln1
+	skpAbsNum2 = getAbsNums mBsln2
+	
+	// Initialize Progress Bar
+	int iTotalObjs = 0
+	progressStart(dbMain, "Check Baseline Changes", "Progress:", (iMaxAbsNum - iMinAbsNum) + 1)
+	
+	// Loop through the list absoulute numbers found
+	Object o1, o2
+	int iAbsNum
+	for(iAbsNum = iMinAbsNum ; iAbsNum <= iMaxAbsNum ; ++iAbsNum) {
+		bool bInList1 = find(skpAbsNum1, iAbsNum, o1)
+		bool bInList2 = find(skpAbsNum2, iAbsNum, o2)
+
+		// Check if it exists in both baselines
+		if (bInList1 && bInList2) {
+
+			// compare attributes
+			bool bAllComp
+			// Check if this is an embedded link, otherwise
+			// check the objects.
+			if(!find(skpEmbCompare, iAbsNum, bAllComp)) {
+				bAllComp = compareAttr(o1, o2, sAttrAll)
+			}
+			if(!bAllComp || !compareAttr(o1, o2, sAttrAdd)) {
+//				print iAbsNum " Changed\n"
+				stmOutput << iAbsNum "\nMod\n"
+			}
+
+		} else if(bInList2) {   // Only in list 2, it is new.
+//			print iAbsNum " New\n"
+			stmOutput << iAbsNum "\nNew\n"
+		} else if(bInList1) {   // Only in list 1, it is deleted.
+//			print iAbsNum " Deleted" ((isRequirement o1) ? " Requirement\n" : "\n")
+			stmOutput << iAbsNum "\nDel" ((isRequirement o1) ? "Req\n" : "\n")
+
+			// To track deletions and later print in RTF doc, note the ID of the latest baseline
+			sDelID = o1."Absolute Number"
+			stmDelOutput << sDelID /*<< "Del"*/ << "\n"
+
+			while(true)
+			{
+				Object obj = next o1
+				int iAbsNumH = obj."Absolute Number"
+				bool bFound = find(skpAbsNum2, iAbsNumH, o2)
+				o1 = obj
+				if(bFound)
+				{
+					sNextIDLatestBaseline = o2."Absolute Number"
+					stmDelOutput << sNextIDLatestBaseline /*<< "DelLatest"*/ << "\n"
+					break;
+				}
+			}
+
+			flagDel = true
+		}
+		
+		// Progress box processing
+		progressStep ++iTotalObjs
+		if (progressCancelled) {
+			if (confirm("Stop execution?")) {
+				progressStop
+				break
+			}
+		}
+	}
+	
+	delete skpAbsNum1
+	delete skpAbsNum2
+	close stmOutput
+	close stmDelOutput
+	progressStop
+}
+	
+// -------------------------------------------------------------------------------
+// getBaselineMods()
+//
+// Gets
+//
+// Inputs:	dbeNameDialog	The window handle to get the baseline information from.
+//
+// -------------------------------------------------------------------------------
+void getBaselineMods(DB dbDialog)
+{
+	int iPos1, iPos2
+	Baseline bslBaseline1, bslBaseline2
+	Module mBsln1
+	Module mBsln2
+	Module mCur = current
+	
+	// Open the output file
+	if (stmOutput == null) {
+		string sFilename = get dbeFilenameEntry
+		stmOutput = write(sFilename)
+
+		sDelFilename  = sFilename "_Deletions"
+		stmDelOutput = write sDelFilename
+	}
+	
+ 	iPos1 = get dbeList1			// position in list
+ 	iPos2 = get dbeList2
+
+	sBslnName1 = get dbeList1	// baseline name
+	sBslnName2 = get dbeList2
+
+	if ((iPos1 < 0) || (iPos2 < 0)) {
+		ack "Two selections are needed."
+		return
+	} else if (iPos1 < iPos2) {
+		ack "Must choose older baseline on the left side."
+		return
+	}
+
+	// Run through the list of baseline names created at startup and
+	// find the requested ones.
+	string sBnlnName
+	for sBnlnName in skpBaselines do {
+
+		Baseline b = key skpBaselines
+
+		string sCheck = (major b) "." (minor b) (suffix b) " " (annotation b)
+
+		if (sBslnName1 == sCheck)
+		{
+		    bslBaseline1 = b
+   		    stmDelOutput << (major b) "\n"
+   		    stmDelOutput << (minor b) "\n"
+   		    stmDelOutput << (suffix b) "\n"
+		}
+		if (sBslnName2 == sCheck) bslBaseline2 = b
+	}
+
+
+	// Load the selected baselines and create skip list of
+	// absolute numbers to objects
+	mBsln1 = load(bslBaseline1, false)
+
+	if (iPos2 == 0) {
+		mBsln2 = mCur
+	} else {
+		mBsln2 = load(bslBaseline2, false)
+	}
+	
+	put(skpBsln1, mCur, mBsln1)
+	put(skpBsln2, mCur, mBsln2)
+	
+	delete skpBaselines
+
+	// Get the date of the previous baseline
+	Module mStartBsln1
+	find(skpBsln1, mStartMod, mStartBsln1)
+	dStartDate = mStartBsln1."Last Modified On"
+
+	// Get the modules for all the embedded links
+	Object o
+	Module mStartBsln2
+	find(skpBsln2, mStartMod, mStartBsln2)
+	for o in mStartBsln2 do {
+		Link lEmbed
+		for lEmbed in o->sEmbLinkMod do {
+			string sTargetMod = fullName(target lEmbed)
+			Module mTarget = read(sTargetMod, false)
+			int iAbsNum = o."Absolute Number"
+
+			if (!find(skpEmbCompare, iAbsNum)) {
+				if (find(skpBsln1, mTarget, mBsln1) && find(skpBsln2, mTarget, mBsln2)) {
+					Skip skpAbsNum1, skpAbsNum2
+					int iEmbAbsNum = (target lEmbed)."Absolute Number"
+
+					if(!find(skpEmbAbsNum, mBsln1, skpAbsNum1)) {
+						skpAbsNum1 = getAbsNums mBsln1
+						put(skpEmbAbsNum, mBsln1, skpAbsNum1)
+					}
+					if(!find(skpEmbAbsNum, mBsln2, skpAbsNum2)) {
+						skpAbsNum2 = getAbsNums mBsln2
+						put(skpEmbAbsNum, mBsln2, skpAbsNum2)
+					}
+	
+					Object o1, o2
+					bool bExistsO1 = find(skpAbsNum1, iEmbAbsNum, o1)
+					bool bExistsO2 = find(skpAbsNum2, iEmbAbsNum, o2)
+					if(bExistsO1 && bExistsO2) {
+						bool bObjsMatch = compareAttr(o1, o2, sAttrAll, dStartDate)
+						put(skpEmbCompare, iAbsNum, bObjsMatch)
+					} else {
+						// If the object exists only in the second basline, see when it
+						// was added.
+						if (bExistsO2) {
+							Date d2 = o2."Last Modified On"
+							if (d2 >= dStartDate) {
+								put(skpEmbCompare, iAbsNum, false)
+							}
+						}
+						
+						
+					}
+				} else {
+					current = mTarget
+					string strfullName = fullName(mTarget)
+					if(strfullName != currModName)
+						break
+					dbMain = create "Baselines for Embedded Links \"" sTargetMod "\""
+					showDialog(dbMain)
+				}
+			}
+		}
+	}
+
+	delete skpEmbAbsNum
+	compareFn
+
+string strFilename = get dbeFilenameEntry
+infoBox "Job complete\nOutput in " strFilename
+
+}
+
+// -------------------------------------------------------------------------------
+// showDialog()
+//
+// Gets
+//
+// Inputs:	dbeNameDialog	The window handle to get the baseline information from.
+//
+// -------------------------------------------------------------------------------
+void showDialog(DB dbDialog)
+{
+	Module m = current      // check calling context
+	
+	if (null m) {
+		ack "Program requires a current Module."
+		halt
+	} else if (isBaseline(m)) {
+		ack "Run program from current version of Module."
+		halt
+	}
+
+	skpBaselines = create
+	
+	// count number of baselines
+	
+	Baseline b
+	int i=0
+	
+	for b in m do {
+	  i++
+	}
+	 
+	if (i==0) {
+	  ack "No baselines to compare."
+//	  insert(dbeList1, 0, str)
+//	  insert(dbeList2, 0, str)
+	  halt
+	}
+	
+	string empty[] = {}
+	
+	if (m == mStartMod) {
+//		string sInitFilename = fileGoodName_(((mStartMod."Name" "") "_Changes"), ".txt", "")
+		label(dbDialog, "Output File Name:")
+		dbeFilenameEntry = fileName(dbDialog, sInitFilename, "*.txt", "Text Format")
+		separator dbDialog
+		label(dbDialog, "Select Old and New Baselines:")
+	} else {
+		label(dbDialog, "Select Old and New Baselines for Embedded Links:")
+	}
+
+	dbeList1= list(dbDialog, "", 300, i+1 <? 5, empty)  // make maximum size of 5 elements
+	dbeList2= list(dbDialog, "", 300, i+1 <? 5, empty)
+	
+	dbeList1->"right"->"unattached"          // make lists side by side
+	dbeList2->"left"->"flush"->dbeList1
+	dbeList2->"top"->"aligned"->dbeList1
+	dbeList2->"right"->"unattached"
+	
+	ok(dbDialog, "Compare", getBaselineMods)
+	
+	realize dbDialog                            // we realize so that the
+	                                      // lists can be populated
+	                                      // using insert
+	
+	// fill up the baselines skip list with current baselines
+	
+	for b in m do {
+	  string str = (major b) "." (minor b) (suffix b) " " (annotation b)
+	  put(skpBaselines, b, str)
+	  insert(dbeList1, 0, str)
+	  insert(dbeList2, 0, str)
+	}
+	
+	insert(dbeList2, 0, "current")
+	
+	show dbDialog                               // off we go.......
+}
+
+//// MAIN PROGRAM ////////////////////////
+
+dbMain = create "Baseline Compare \"" sModName "\""
+showDialog(dbMain)
+
+// end of changed.dxl

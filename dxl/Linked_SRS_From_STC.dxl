@@ -1,0 +1,20 @@
+string SOURCE = "STC_GD_Date_Time_Command"
+Object o 
+string srcModName
+int flag
+
+for o in (current Module) do {
+
+   flag = 0
+
+   for srcModName in o<-"*" do {
+      
+      if (srcModName == SOURCE && flag == 0)
+      {
+         flag = 1
+         print o."Absolute Number" ", "
+
+      }
+   }
+
+}

@@ -1,0 +1,286 @@
+/********************variables*************************************************/	
+	//Object o = null
+	
+	Filter filt = null;			
+	Module m   = null
+	Stream Output;
+	Stream ErrOut;
+	string dirname = "c:\\tmp\\"
+	string prefix = "";	
+	bDeletedObject = 0
+	const string LINK_MODULE = "*"
+	const string seperatChar = ","
+	const int target = 2; //airbus platform
+	
+	int depth = 0;
+/*************************************************************************/
+/*check if have specific column exist in a module, this will avoid error before apply filter to a module*/
+bool HasColumn(Module md, string clmn){
+	bool rt = false;
+	
+	string attrN;
+	Column c 
+	for c in md do {
+		attrN = (attrName c);
+		if( attrN == clmn ) //
+		{
+			rt = true;
+			break;
+		}
+	} 
+	
+	if( !rt ){
+		ErrOut << "No column " clmn " found in module " md."Name" "\n"
+	}
+	return rt;	
+}
+
+/*
+Filter Boeing or Airbus applicable requirement objects for link analyze.
+ichoice = 1 filter Boeing, 2 filter Airbus, 3 = EPIC ATN ( for test only )*/
+Filter buildFilter(Module oMod, int ichoice) 
+{
+	//Filter flt = includes(attribute "Project", "PM-CPDLC") || (! includes(attribute "Project", "EPIC ATN") );	
+	Filter flt = null;
+	
+	if( ichoice == 1 ){
+		if(HasColumn(oMod, "_Proposed *Platform") && HasColumn(oMod, "*Platform")) //sysDD
+		{		
+			flt = (includes(attribute "_Proposed *Platform", "IMMR - Boeing") || includes(attribute "*Platform", "IMMR")) && (attribute "*Type" == "Requirement");
+		}
+		else if( HasColumn(oMod, "*Platform") && HasColumn(oMod, "*Type")) //SWRS or SDD module
+		{
+			flt = (includes(attribute "*Platform", "IMMR - Boeing")) && ((attribute "*Type" == "HL Reqmt")||(attribute "*Type" == "HL/LL Reqmt"));
+		}
+		else{
+			print "boeing but filter failed. \n"
+		}
+	}
+	else if(ichoice == 2){
+		if( HasColumn(oMod, "_Proposed *Platform") && HasColumn(oMod, "*Platform")) //sysDD
+		{		
+			flt = (includes(attribute "_Proposed *Platform", "IMMR - Airbus") || includes(attribute "*Platform", "IMMR")) && (attribute "*Type" == "Requirement");
+		}
+		else if( HasColumn(oMod, "*Platform") && HasColumn(oMod, "*Type")) //SWRS or SDD module
+		{
+			flt = includes(attribute "*Platform", "IMMR - Airbus") && ((attribute "*Type" == "HL Reqmt")||(attribute "*Type" == "HL/LL Reqmt"));
+		}
+		else{
+			print "airbus but filter failed. \n"
+		}
+	}
+	else if(ichoice == 3){
+			if( HasColumn(oMod, "Project") == true ){
+				/*make sure we have enum EPIC ATN before apply filter*/
+				AttrDef ad = find(oMod, "Project");
+				AttrType at = ad.type;
+			
+				if( attributeValue(ad, "EPIC ATN") ) {
+						//print "--- haha \n"
+						if( HasColumn(oMod, "Requirement") ){
+							
+							flt = includes(attribute "Project", "EPIC ATN") && (attribute "Requirement" == "True");	
+						}
+						else
+						{
+							flt = includes(attribute "Project", "EPIC ATN");
+						}
+						
+				}
+				else{
+					print "EPIC ATN but filter failed - no EPIC ATN. \n"
+				}
+				
+			}
+			else{
+					print "EPIC ATN but filter failed. \n"
+			}
+	}
+	
+	return flt;
+}
+
+/*check if it's an applicable module to report linked objects from
+ichoice = 1 filter Boeing, 2 filter Airbus, 3 = EPIC ATN ( for test only )*/
+bool FilterModule( Module oMod, int ichoice )
+{
+	bool rt = false;
+	
+	if( ichoice == 1 )
+	{
+		rt = HasColumn(oMod, "*Platform");
+	}
+	else if( ichoice == 2)
+	{
+		rt = HasColumn(oMod, "*Platform");
+	}
+	else if( ichoice == 3)
+	{
+		rt = HasColumn(oMod, "Project");
+	}
+	
+	return rt;
+	
+}
+
+/* for each inlinked object, we will check if it's a desired object before continue to look further inlink for it.
+ichoice = 1 filter Boeing, 2 filter Airbus, 3 = EPIC ATN ( for test only use )*/
+bool FilterObject(Object obj, int ichoice)
+{
+	bool rt = false;
+	
+	int offset = null 
+	int length = null 
+ 
+	bool matchCase = true 
+	bool reverse = true 
+	
+	string strSrc;
+	
+	if( ichoice == 1 ){
+		strSrc = obj."*Platform";
+		if (findPlainText (strSrc, "IMMR - Boeing", offset, length, matchCase, reverse)){ 
+			rt = true;
+		} 
+	}
+	else if(ichoice == 2){
+		strSrc = obj."*Platform";
+		if (findPlainText (strSrc, "IMMR - Airbus", offset, length, matchCase, reverse)){ 
+			rt = true;
+		} 
+	}
+	else if( ichoice == 3 )
+	{
+		strSrc = obj."Project";
+		if (findPlainText (strSrc, "EPIC ATN", offset, length, matchCase, reverse)){ 
+			rt = true;
+		} 
+	}
+	
+	return rt;
+}
+
+void ReportInLinkForObj( Object Obj, string parentObj )
+{
+	Module oMod;
+	Skip modSkip = createString;
+	string subparent = "";
+	int hasInlink = 0;
+	
+	depth = depth + 1;
+	print "ReportInLinkForObj " identifier Obj " enter \n";	
+	
+	if( FilterObject( Obj, target ) ) then
+	{		
+		//Link l; for aLink in anObj -> "*" do  //For outlink
+		//for l in all o <- string "" do 	//For inlink
+		
+		Object LinkSrc;
+		Link    aLink;
+		LinkRef lRef;
+		
+		for lRef in Obj <- "*" do 	//For inlink
+		{	
+			string smn = fullName(source(lRef))
+			if( ! null module(smn) ){
+				if (! open(module(smn))) {
+					oMod = read(smn, false)
+					
+					if( oMod != null )
+					{
+						filt = buildFilter(oMod, target);
+						if(  filt != null )
+						{
+							set(oMod, filt)
+							filtering on 
+						}
+					}
+				}
+			}
+		}
+		
+		for aLink in Obj <- "*" do {
+			LinkSrc = source(aLink);	
+			
+			//print " linked with " identifier LinkSrc "\n";
+			if ((! null LinkSrc) && ( Obj != LinkSrc )) then				
+			{
+			   string modname = fullName(source aLink);               
+               
+               /* open linked module */
+				oMod = read(modname, false);
+				
+				if( FilterModule( oMod, target ) ){				 
+					subparent = parentObj seperatChar identifier LinkSrc;			
+					ReportInLinkForObj(LinkSrc, subparent);
+					hasInlink = 1;
+				}
+			}	
+			
+			if( Obj == LinkSrc ) then { 
+				ErrOut << "Self Link from " identifier Obj " with " identifier LinkSrc "\n";
+			}
+		}
+		
+		if( hasInlink == 0 )
+		{
+			Output << parentObj "\n";
+		}
+		
+		for oMod in modSkip do {
+			if (oMod != m) {
+				close(oMod)
+			}
+		}
+	}
+}
+
+void ReportInLinkForModule( Module Mdl, string parentObj )
+{
+	Object Obj;	
+	
+	if (! null Mdl) then{ //a valid module provideds.
+	    //Output<<"ReportInLinkForModule " name(Mdl) " enter \n";
+	    print "ReportInLinkForModule " name(Mdl) " enter \n";
+		
+		showDeletedObjects false
+		
+		for Obj in Mdl do {				
+			//check if the object has deleted, if not, continue
+			if (isDeleted Obj){	bDeletedObject = 1;	}
+			print "Obj " identifier Obj "\n";
+			parentObj = identifier(Obj);
+			
+			depth = 0; //clear depth here for the root calling.
+			ReportInLinkForObj(Obj, parentObj);
+		}
+		
+		filtering off
+		showDeletedObjects false		
+		
+		print "ReportInLinkForModule " name(Mdl) " exit \n";
+	}
+	else{
+		print "Abort ReportInLinkForModule at level " depth " \n";
+	};
+	
+	return;
+}
+
+
+
+/********************Main*************************************************/	
+	if (!fileExists_(dirname)".")
+	{
+		mkdir(dirname)
+	}
+	Output = write "c:/tmp/Trace_Report.csv"
+	ErrOut = write "c:/tmp/Trace_Report.log"
+	
+	m = current Module
+	
+	filt=buildFilter(m, target); //For Boeing requirement
+	set(m, filt) 
+	filtering on 
+	
+	ReportInLinkForModule(m, prefix);

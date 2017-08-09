@@ -1,0 +1,312 @@
+// epic_atn.dxl
+/*
+*  Revert Criticality attribute to the situation that was before running combined.dxl and create new EPIC Criticality attribute.	
+*
+*  "Run" mode reports on changes to be made AND attempts to make those changes
+*
+*  "Create minor baseline" creates new minor baseline, when module was modified and sets following comment: "CRITICALITY fix."
+*
+*  Results are logged to c:\temp\epic_fixit.txt
+*
+*  May 29, 2008 jsedlak   Initial release
+*
+*/
+pragma runLim, 0
+
+const string TITLE = "Fix Criticality attribute"
+const string FORMAL = "Formal"
+const string PROJECT = "Project"
+const string PROJECT_AOA = "EPIC AOA"
+const string PROJECT_POA = "EPIC POA"
+const string PROJECT_ATN = "EPIC ATN"
+const string ATTRIBUTE_NAME = "787 Criticality"
+const string ORIG_ATTRIBUTE = "Criticality"
+const string NEW_ATTRIBUTE = "EPIC Criticality"
+const string DASHES = "- - - - -"
+const string NULLS[] = {}
+
+Buffer Results
+DB Db
+DBE FldrSpecDbe, FldrSpecBrowseDbe, ModNamesDbe, ResultsDbe, dbeSetInDeleted, dbeCreateBaseline, dbeForceScript
+Item Itm
+Module CurMod, Mod
+Object Obj
+Skip ModNames, UndeletedObjs
+bool ProgressCancelled, CreateBaseline, HasProjectATNOption, HasSWReleaseOption, ForceScript
+int ProgressInt, ProgressLimit
+string SelectedFldrSpec, ModName, SelectedModName, CurModSpec
+bool newAt
+bool multiAt
+string prev_name
+
+void ProcessObj() {
+    if (!isMember(Obj.PROJECT, PROJECT_AOA) && !isMember(Obj.PROJECT, PROJECT_POA) && !isMember(Obj.PROJECT, PROJECT_ATN))
+    {
+        Obj.NEW_ATTRIBUTE = DASHES
+    }
+    else
+    {
+        string s = Obj.ORIG_ATTRIBUTE
+        Obj.NEW_ATTRIBUTE = s
+    }
+}
+
+bool AttributeExists(string attr)
+{
+    return exists(attribute(attr))
+}
+
+void AddAttribute()
+{
+    const string names[] = {"C", "D", "E", DASHES}
+    string mess = ""
+    AttrType at = create(NEW_ATTRIBUTE, names, mess)
+
+    if (null at)
+    {
+        string s = lastError
+        print s
+    }
+    else
+    {
+        AttrDef ad = create object type NEW_ATTRIBUTE multi true attribute NEW_ATTRIBUTE
+        if (!null ad)
+        Results += "\tAttribute was added.\n"
+    }
+}
+
+void DeleteAttribute()
+{
+    string mess = ""
+    AttrDef ad = find(Mod, ORIG_ATTRIBUTE)
+    AttrType at = ad.type
+    delete(ad)
+    delete(at, mess)
+
+    Results += "\tAttribute "ORIG_ATTRIBUTE" was deleted.\n"
+
+}
+
+void RenameBack()
+{
+    string errmess = ""
+    AttrDef ad = find(Mod, ORIG_ATTRIBUTE)
+    AttrType at = ad.type
+
+    at = modify(at, prev_name, errmess)
+    ad = modify(ad, setName, ATTRIBUTE_NAME)
+    ad = modify(ad, setMulti, multiAt)
+
+    Results += "\tAttribute "ORIG_ATTRIBUTE" was renamed.\n"
+}
+
+void ProcessMod() {
+    bool process
+    if (AttributeExists(ORIG_ATTRIBUTE) && !AttributeExists(NEW_ATTRIBUTE))
+    {
+        AddAttribute()
+        for Obj in Mod do {
+            ProcessObj
+        }
+        
+        if (newAt)
+        {
+            DeleteAttribute()
+        }
+        else
+        {
+            RenameBack()
+        }
+    }
+}
+
+void ProcessSelectedModName() {
+    bool baselined = false
+    progressMessage "Processing " SelectedModName
+    Baseline bas
+    Date d
+    Mod = edit(SelectedFldrSpec "/" SelectedModName, false, false)
+    if (null Mod or ! isEdit Mod) {
+        ((Results += "\t{\\b ERROR: Could not edit module: ") += SelectedModName) += "}\n"
+        return
+    }
+
+    if (!ForceScript){
+        bas = getMostRecentBaseline(Mod)
+        d = Mod."Last Modified On"
+        if ((null bas) || (dateOf(bas) < d)){
+            Results += "\tERROR: Modul isn't baselined or is modified.\n"
+            if (isVisible Mod) {
+                refresh Mod
+                refreshExplorer Mod
+            } else {
+                close Mod
+            }
+            return
+        }
+    }
+
+    Baseline b
+    Baseline previousVer
+    bool bline_found = false
+    for b in current Module do {
+        if (annotation(b) == "Project EPIC ATN and attribute CRITICALITY was added.")
+        {
+            bline_found = true;
+            break
+        }
+        previousVer = b
+    }
+
+    if (!bline_found)
+    {
+        Results += "Baseline \"Project EPIC ATN and attribute CRITICALITY was added.\" wasn't found."
+        return
+    }
+
+    Module pb = load(previousVer, false)
+
+    AttrDef ad = find(pb, ATTRIBUTE_NAME)
+    if (!null(ad))
+    {
+        multiAt = ad.multi
+        newAt = false
+        prev_name = ad.typeName
+    }
+    else
+    {
+        newAt = true
+    }
+
+    close(pb)
+
+    current = Mod
+
+    ProcessMod
+
+    if (unsaved Mod) {
+        progressMessage "Saving changes to the module " SelectedModName
+        save Mod
+        if (CreateBaseline) {
+            create(Mod, nextMinor, "CRITICALITY fix.")
+            baselined = true
+        }
+    }
+
+    if (isVisible Mod) {
+        refresh Mod
+        refreshExplorer Mod
+    } else {
+        if (!baselined)
+        close Mod
+    }
+}
+
+void DiscardChanges() {
+    for SelectedModName in ModNamesDbe do {
+        Mod = module item SelectedFldrSpec "/" SelectedModName
+        if (! null Mod and ! isVisible Mod and unsaved Mod) close(Mod, false)
+    }
+}
+
+void DoIt() {
+    ForceScript = get dbeForceScript
+    CreateBaseline = get dbeCreateBaseline
+    Results = create
+    set(ResultsDbe, "")
+    ProgressInt = ProgressLimit = 0
+    ProgressCancelled = false
+    for SelectedModName in ModNamesDbe do ProgressLimit++
+    if (ProgressLimit == 0) {
+        errorBox "Please select module(s) to process"
+        return
+    }
+    progressStart(Db, TITLE, "", ProgressLimit)
+    for SelectedModName in ModNamesDbe do {
+        if (length Results > 0) Results += '\n'
+        ((Results += "Processing ") += SelectedModName) += '\n'
+        ProcessSelectedModName
+        progressStep ++ProgressInt
+        if (progressCancelled) {
+            ProgressCancelled = true
+            break
+        }
+    }
+    progressStop
+    if (ProgressCancelled) {
+        infoBox "Operation cancelled by the user"
+        DiscardChanges
+    } else {
+        setFromBuffer(ResultsDbe, Results)
+    }
+    string filename = "c:\\temp\\epic_fixit.txt"
+    Stream out = write filename
+    out << Results
+    close out
+    delete Results
+    raise Db
+}
+
+void ApplySelected(DB db) {
+    DoIt
+}
+
+void PopulateModNamesDbe() {
+    empty ModNamesDbe
+    for Itm in folder SelectedFldrSpec do {
+        if (type Itm != FORMAL) continue
+        ModName = name Itm
+        put(ModNames, ModName, ModName)
+    }
+    int i = 0
+    for ModName in ModNames do {
+        insert(ModNamesDbe, i, ModName)
+        if (SelectedFldrSpec "/" ModName == CurModSpec) set(ModNamesDbe, i, true)
+        i++
+        delete(ModNames, ModName)
+    }
+}
+
+void FldrSpecBrowseDbeSelected(DBE dbe) {
+    SelectedFldrSpec = fnMiniExplorer(Db, MINI_EXP_FP, null, null)
+    if (! folder SelectedFldrSpec) return
+    set(FldrSpecDbe, SelectedFldrSpec)
+    PopulateModNamesDbe
+}
+
+void CloseSelected(DB db) {
+    delete UndeletedObjs
+    delete ModNames
+    hide db
+}
+
+ModNames = createString
+UndeletedObjs = create
+SelectedFldrSpec = fullName current Folder
+CurMod = current Module
+if (null CurMod) {
+    CurModSpec = ""
+} else {
+    CurModSpec = fullName CurMod
+}
+Db = create(TITLE, styleCentered)
+FldrSpecDbe = field(Db, "Folder to process:", SelectedFldrSpec, 40, true)
+beside Db
+FldrSpecBrowseDbe = button(Db, "Browse...", FldrSpecBrowseDbeSelected)
+left Db
+label(Db, "Select module(s) to process:")
+ModNamesDbe = listView(Db, listViewOptionMultiselect, 400, 15, NULLS)
+
+dbeCreateBaseline = toggle(Db, "Create minor baseline", false)
+dbeForceScript = toggle(Db, "Run scrip in any cases", false)
+
+ResultsDbe = richText(Db, "Results", "", 400, 300, true)
+apply(Db, "Run", ApplySelected)
+close(Db, true, CloseSelected)
+realize Db
+setExtraHeightShare(ModNamesDbe, 0.5)
+setExtraHeightShare(ResultsDbe, 0.5)
+insertColumn(ModNamesDbe, 0, "Module Name", 394, iconNone)
+PopulateModNamesDbe
+setCenteredSize(Db, 450, 650)
+show Db

@@ -1,0 +1,173 @@
+﻿Module m = current;
+Link lnk;
+Object o;
+
+string buttons[] = {"Done"};
+
+int iTestCases;
+int iSlt, iSrot, iUbt;
+int iVerify, iAnalysis, iInspection, iDemon;
+int iVerifyState, iTested;
+
+string strCsvFile = "D:\\" name(m) ".CSV";
+string strTxtFile = "D:\\" name(m) ".TXT";
+string objHeading = "";
+string objNumber = "";
+string strTcName = "";
+string strRqmnt = "";
+string lnkMod = "";
+string strModName = "";
+Regexp regObjNum = regexp "^(5\\.[1-9]+)";
+
+bool hasLnk = false;
+
+Stream cvsFile = null;
+Stream txtFile = null;
+
+
+iTestCases = 0;
+iSlt = 0;
+iSrot = 0;
+iUbt = 0;
+iVerify = 0;
+iAnalysis = 0;
+iInspection = 0;
+iDemon = 0;
+iVerifyState = 0;
+iTested = 0;
+
+int iVerifyMethod;
+int objLvl;
+int iTcType;
+string sTcAction;
+
+csvFile = write strCsvFile;
+txtFile = write strTxtFile;
+
+csvFile << "Test Case Module Name" "," "Test Case" "," "Verify Statement" ",";
+csvFile << "SRD Module Name" "," "Requirement" "," "Link Module\n";
+txtFile << "Test Case -> Requirement Trace Report\n\n";
+txtFile << "Project: EPIC ATN\n";
+txtFile << "Module: " name(m) "\n\n";
+
+
+for o in m do
+{
+    iVerifyMethod = o."Verification Method";
+    iTcType = o."Test Case Type"
+    objLvl = level(o);
+    sTcAction = o."Action";
+    Object objTgt;
+    lnkMod = "";
+    string strRqmnt;
+    strRqmnt = "";
+    objNumber = number(o);
+    hasLnk = false;
+    
+    if(regObjNum objNumber)
+    {
+        if(objLvl == 2)
+        {
+            objHeading = o."Object Heading";
+            iTestCases++;
+            
+            if(iVerifyMethod == 0)
+            {
+                iVerify++;
+            }
+            else if(iVerifyMethod == 1)
+            {
+                iAnalysis++;
+            }
+            else if(iVerifyMethod == 2)
+            {
+                iInspection++;
+            }
+            else if(iVerifyMethod == 3)
+            {
+                iDemon++;
+            }
+            else
+            {
+                ack "Unrecognized Verification Method.";
+            }
+            if(iTcType == 0)
+            {
+                iSlt++;
+            }
+            else if(iTcType == 1)
+            {
+                iSrot++;
+            }
+            else if(iTcType == 2)
+            {
+                iUbt++;
+            }
+            else
+            {
+                ack "Unrecognized Test Case Type.";
+            }
+        }
+        
+        if(sTcAction == "VERIFY")
+        {
+            iVerifyState++;
+            for lnk in o -> "*" do
+            {
+                iTested++;
+                Module mLnk = module(lnk);
+                ModName_ mlnk = target(lnk);
+                if(!open(mlnk))
+                {
+                    Module tmp = read(fullName(mlnk), false);
+                }
+                Object objLnk = target(lnk);
+                strModName = target(lnk);
+                lnkMod = name mLnk;
+                strRqmnt = identifier(objLnk) " ";
+                objId = identifier(o);
+
+                csvFile << name(m) ",";
+                csvFile << "\"" objHeading "\"" ",";
+                csvFile << identifier(o) ",";
+                csvFile << strModName ",";
+                csvFile << strRqmnt ",";
+                csvFile << lnkMod "\n";
+                hasLnk = true;
+                close(tmp, false);
+            }
+            if(!hasLnk)
+            {
+                csvFile << name(m) ",";
+                csvFile << objHeading ",";
+                csvFile << identifier(o) ",";
+                csvFile << "" ",";
+                csvFile << "" ",";
+                csvFile << "" "\n";
+            }
+        }
+        else
+        {
+            continue;
+        }
+    }
+}
+
+txtFile << "Test Cases = " iTestCases "\n\n";
+txtFile << "Test Case Type\n";
+txtFile << "SLT = " iSlt "    " "SROT = " iSrot "    " "UBT = " iUbt "\n\n";
+txtFile << "Verification Method\n";
+txtFile << "Verification Test Case = " iVerify "    ";
+txtFile << "Analysis = " iAnalysis "    ";
+txtFile << "Inspection = " iInspection "    ";
+txtFile << "Demonstration = " iDemon "\n\n";
+txtFile << "VERIFY Statements = " iVerifyState "\n\n";
+txtFile << "SRS Tested          = N/A    SVCP Tested         = N/A    Tested          = " iTested "\n";
+txtFile << "Derived SRS Tested  = N/A    Derived SVCP Tested = N/A    Derived Tested  = N/A\n";
+
+close csvFile;
+close txtFile;
+
+string msg = "Done.\n" "Report Saved to:\n" strCsvFile "\n" strTxtFile;
+
+messageBox(msg, buttons, msgInfo);

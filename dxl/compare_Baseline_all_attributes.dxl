@@ -1,0 +1,701 @@
+//BaselineCompare
+/* 
+	Customized Baseline Compare Utility to use instead of the standard DOORS
+	baseline compare.  It allows the user to select attributes to test for and
+	display changes.
+        Notes: The script doesn't support the condition that the selected module linked
+               to itself when it is the updated part and Current is the selected version.
+
+	Copyright © April 2007 Honeywell, Patrick Roach
+
+	REVISION HISTORY:
+	Date         Name       Description
+	-----------  -------    -----------
+        03-July-2015 Minghui    Update loadLinkModules for it cannot support some conditon.
+        23-June-2015 Minghui    Add comments for no support condition
+	18-June-2015 Chongyang  Add more default attributes to cpmpare
+	18-May-2015  Minghui    Update link comparison
+	21-Apr-2015  Minghui    Add link comparison
+	01-Jan-2014  Steven     Change output when no diff found in compareFn
+	14-MAR-2012  T.Valko    Title of the output log didn't display when new
+	                        objects was added or deleted.
+
+*/
+
+   pragma runLim,0
+   
+   const string TITLE = "Baseline Compare v1.0   " 
+      
+ //-------------------------------------------------------------------------------
+ //  DEFAULT ATTRIBUTES -  to be pre-selected when dialog opens ------
+ //------------------------------------------------------------------------------
+ // To add or remove which attributes will be selected by default, add or remove
+ // attribute name(s) to the below array.
+ 
+ //Include Attributes of SRS,SRD,SDD,STC,TATS,HSI and SVP
+   const string DEFAULT_ATTRIBUTES_TO_COMPARE[] = 
+   {
+       "Object Heading",
+       "Object Text",
+       "Project",
+       "SW Release",
+       "EPIC Criticality",
+       "SW Release Variant",
+       "Requirement",
+       "Deferred Requirement",
+       "Derived Requirement",
+       "Req Analysis",
+       "Action",
+       "P / F",
+       "P/F",
+       "SCR",
+       "Test Case Type",
+       "Verification Method",
+       "Requirement Analysis",
+       "Test Case Method"
+   }
+   
+ //------------------------------------------------------------------------------
+ //  END DEFAULT ATTRIBUTES
+ //------------------------------------------------------------------------------  
+
+//--- start module
+
+    Module homeModule   = null
+    
+//---- generic baseline variable
+
+   Baseline b
+   
+//------ Define  a counter  variable to keep track of the number of times this function is invoked
+   int iCounter = 0
+   
+//------ Define the skip associated with the main tab
+
+   DB win         = null
+   DBE list1      = null
+   DBE list2      = null                  // Baseline selection lists
+   DBE showBL     = null
+   DBE showLK = null
+   DBE atrListDbe = null                   //jdn attribute selection list 041207
+   
+   Skip baselines = createString   //stores baselines indexed by name
+   
+   string empty[] = {}             //empty array used to initialize list and choice DBEs
+   
+Skip openModList = null
+
+void copySkipToBuffer(Skip s, Buffer b){
+	string z
+	for z in s do{
+		b += z "\n"
+	}
+}
+
+void loadLinkModules(Object o){
+	openModList = create
+	Link l
+	LinkRef lref
+	Module m = null
+	for l in o->"*" do{
+		m = read(fullName(target(l)),false,true)
+		put(openModList,m,m)
+	}
+}
+
+void getLinkData(Object o,Skip s){
+	loadLinkModules(o)
+	//LinkRef lref
+	Link l
+	string str = null
+
+	for l in o->"*" do{
+		if (null Object != target(l)){
+			str = "Outlink to " identifier(target(l)) "\n"
+			put(s,str,str)
+		}
+	}
+	
+}
+void getDiffLinkData(Object o1, o2, Skip s1, s2){
+	loadLinkModules(o1)
+	loadLinkModules(o2)
+	//LinkRef lref
+	Link l1
+	Link l2	
+	string strtmp1 = null
+	string strtmp2 = null
+	int flag = 0
+	
+	for l1 in o1->"*" do{
+		if (null Object != target(l1)){
+			strtmp1 = "Outlink to " identifier(target(l1)) "\n"
+			for l2 in o2->"*" do{
+				if (null Object != target(l2)){
+					strtmp2 = "Outlink to " identifier(target(l2)) "\n"
+					if(strtmp1 == strtmp2){
+						flag = 1
+						break
+					}
+				}
+			}
+			if (1 != flag){
+				put(s1,strtmp1,strtmp1)
+			}
+			else
+			{
+				strtmp1 = null
+				strtmp2 = null
+				flag = 0
+			}
+		}
+	}
+	strtmp1 = null
+	strtmp2 = null
+	flag = 0
+	for l2 in o2->"*" do{
+		if (null Object != target(l2)){
+			strtmp2 = "Outlink to " identifier(target(l2)) "\n"
+			for l1 in o1->"*" do{
+				if (null Object != target(l1)){
+					strtmp1 = "Outlink to " identifier(target(l1)) "\n"
+					if(strtmp1 == strtmp2){
+						flag = 1
+						break
+					}
+				}
+			}
+			if (1 != flag){
+				put(s2,strtmp2,strtmp2)
+			}
+			else
+			{
+				strtmp1 = null
+				strtmp2 = null
+				flag = 0
+			}
+		}
+	}
+}
+
+bool linksChanged(int absno,Object o1, o2, string& msg,Buffer redliningResult){
+	Skip linkList = createString
+	Skip s1 = createString
+	Skip s2 = createString
+	Buffer LinkBuffObj1 = create
+	Buffer LinkBuffObj2 = create
+	Buffer LinkBuffObj3 = create
+	Buffer LinkBuffObj4 = create
+	LinkRef lref
+	bool returnValue = true
+	setempty redliningResult
+	
+	getLinkData(o1,linkList)
+	copySkipToBuffer(linkList,LinkBuffObj1)
+	linkList = createString // Reset skip
+	
+	getLinkData(o2,linkList)
+	copySkipToBuffer(linkList,LinkBuffObj2)
+	linkList = createString // Reset skip
+	
+	if(LinkBuffObj1 != LinkBuffObj2){	
+		getDiffLinkData(o1, o2, s1, s2)
+		copySkipToBuffer(s1,LinkBuffObj3)
+		copySkipToBuffer(s2,LinkBuffObj4)
+	
+		Buffer redlining = create
+		string diffmsg = diff(redlining, LinkBuffObj3, LinkBuffObj4)
+		if(!null diffmsg){ 
+			errorBox "Unable to compute redlining: " diffmsg
+		}
+
+		msg = "Object #" absno " has differences in links "  "\n<\t" (tempStringOf LinkBuffObj3) "\n>\t" (tempStringOf LinkBuffObj4) "\n"
+		if (iCounter == 1){
+			redliningResult = "{\\i object } {\\b\\i #" absno "} {\\i has differing } {\\b links"  "}\n" (tempStringOf redlining) "\n\n" 
+		}else{
+			redliningResult = "{\\i object }  {\\b\\i #" absno "} {\\i has differing } {\\b links"  "}" (tempStringOf redlining) "\n\n" 
+		}
+		iCounter++
+		accept o1
+		accept o2
+		delete redlining
+		returnValue = false
+	}
+	
+	delete LinkBuffObj1
+	delete LinkBuffObj2
+	delete LinkBuffObj3
+	delete LinkBuffObj4
+	return returnValue
+}
+
+   bool attribUnchanged(int absno,Object o1, o2,string attr,string& msg,Buffer redliningResult)
+//-------------------------------------------------------------------------------------------------
+   {
+   
+       Buffer b1        = create
+       b1               = o1.attr
+       Buffer b2        = create
+       b2               = o2.attr
+       bool returnValue = true
+   
+       setempty redliningResult
+       if (b1 != b2)
+       {
+           Buffer redlining = create
+           string diffmsg = diff(redlining, b1, b2)
+           if (!null diffmsg) 
+           {
+               errorBox "Unable to compute redlining: " diffmsg
+           }
+   
+           msg = "Object #" absno " has differing " attr "\n<\t" (tempStringOf b1) "\n>\t" (tempStringOf b2) "\n"
+   
+           // if the Counter Var is 1 then create the message with a newline
+           // char in between,  else without the newline char in between
+           if (iCounter == 1) then
+           {
+               redliningResult = "{\\i object } {\\b\\i #" absno "} {\\i has differing } {\\b " attr "}\n" (tempStringOf redlining) "\n\n" 
+           } 
+           else 
+           {
+               redliningResult = "{\\i object } {\\b\\i #" absno "} {\\i has differing } {\\b " attr (tempStringOf redlining) "}\n\n" 
+           }
+           iCounter++
+           accept o1                      // set filter
+           accept o2                      // on both objects
+           delete redlining
+           returnValue = false
+       }//end if
+       delete b1
+       delete b2
+       return returnValue
+   } //end
+   
+//-------------------------------------------------------------------------   
+     Skip getAbsnos(Module m) 
+//--------------------------------------------------------------------------
+//   Build a skip list which maps absnos onto their corresponding
+//   objects.  Also initialize the DXL filter to "reject"
+   {
+     Skip res = create
+   
+     Object o
+     for o in m do 
+     {
+       if (canRead o) 
+       {
+           int a = o."Absolute Number"
+           put(res, a, o)
+       }//end if
+       reject o                        // filter those mentioned in report
+     }//end for
+     return res
+   }//end
+   
+   
+//--------------------------------------------------
+   void compareFn (DBE dbe)
+//-------------------------------------------------
+//     Main comparison routine:
+//     find out which modules to compare
+//     compare objects present in both, report on
+//     those present in older to newer..
+   {
+   	
+       Skip atrList        = createString
+       string str          = ""
+       Baseline baseline1  = null
+       Baseline baseline2  = null
+       string versionName  = ""
+       string name1        = ""
+       string name2        = ""
+       int idx1            = 0
+       int idx2            = 0
+       Module mod1         = null
+       Module mod2         = null
+       bool displayModules = (get showBL != 0)
+       bool includeLinks = (get showLK != 0)
+   //--- load selected attribute names into skip list
+       for str in atrListDbe do
+       {
+       	 put (atrList,str,str)
+       }
+       
+       iCounter = 1
+   
+
+//---- get baseline compare selections
+       idx1 = get list1              // integer position in list
+       idx2 = get list2
+   
+       name1 = get list1             // selected baseline name
+       name2 = get list2
+   
+//--- Check that valid selections have been made from the baseline lists
+       if (idx1 < 0 || idx2 < 0 || idx1 == idx2)  //check for no select -1 and equal selections
+       {
+           warningBox "Please select a different version from each list."
+           return
+       }
+       
+//---  make sure left pane (mod1) is always older thant right pane (mod2) ***jdn
+       if idx2 > idx1 then   //swap right and left pane selections if mod2 is older than mod1
+       	{
+       		  idx1 = get list2              // assign right pane selection index to left
+            idx2 = get list1              // assign left pane selection index to right
+   
+            name1 = get list2             // assign right pane selection value to left
+            name2 = get list1             // assign left pane selection value to right
+       	}
+       	
+//---- Use the selected names to find each baseline handle from the baselines list
+            
+       find (baselines, name1 , baseline1)
+       find (baselines, name2 , baseline2)
+
+//---- handle 'current' selections in baseline select list
+  
+       if (idx1==0) then
+       { 
+           mod1 = read(name homeModule, displayModules) // current version
+       } 
+       else 
+       {
+           mod1 = load(baseline1, displayModules)     // display baseline
+       }
+   
+       if (idx2==0) 
+       {
+           
+           mod2 = read(name homeModule, displayModules) // current version
+       } 
+       else 
+       {
+           mod2 = load(baseline2, displayModules) //display baseline
+       }
+       
+       if(null mod1 || null mod2)
+       {
+   		errorBox("One of the baselines could not be openened. Please contact your system administrator.")
+   		halt
+       }
+//-----------     make sure filtering is off on both sides.
+       current = mod1                 
+       filtering off                
+       current = mod2
+       filtering off
+       
+       
+       current = homeModule
+   
+       Skip AbsNos1 = getAbsnos mod1  // build lookup list of absnos -> objects
+       Skip AbsNos2 = getAbsnos mod2
+   
+       Object o1 = null 
+       Object o2 = null
+       int diffs = 0
+   
+       string txt                = ""
+       string addedTxt           = ""
+       string deletedTxt         = ""
+       string msg                = ""
+       string addedTxtRedlined   = ""
+       string deletedTxtRedlined = ""
+   
+//---- Define the string which will store the redlined Txt and message
+
+       Buffer redlinedTxt = create
+       Buffer redlinedMsg = create
+   
+       redlinedTxt += "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;\\red0\\green0\\blue255;}"
+       redlinedTxt += "{\\b " fullName(mod1) "}\n"
+       redlinedTxt += "{ Baseline } {\\cf2\\b " name1  "} {compared to }{\\cf3\\b " name2 "}\n\n"
+   
+       for o1 in AbsNos1 do 
+       {                                  // loop through side 1
+           Object o2
+           int absno = (int key AbsNos1)
+   
+           if (find(AbsNos2, absno, o2)) 
+           {                              // absno exists in other baseline
+               
+               // compare selected attributes loop -- jdn 041207
+               // compares all selected attributes from the attribute dialog list
+               str = ""
+               for str in atrList do
+               {
+               	 if (!attribUnchanged(absno, o1, o2, str, msg, redlinedMsg))
+                  {
+                   diffs++                            // found a difference
+                   txt = txt msg
+                   if (1==diffs) 
+                   	{
+                      redlinedTxt += "{\\b Modified Objects}\n"
+                    }
+                   redlinedTxt += exportRTFString(tempStringOf redlinedMsg)
+                  }
+               }//end for
+               
+				if(includeLinks){
+					if(!linksChanged(absno,o1,o2,msg,redlinedMsg)){
+						diffs++ // found a difference
+						txt = txt msg
+						if (1==diffs)
+						{
+							redlinedTxt += "{\\b Modified Links}\n"
+						}
+						redlinedTxt += exportRTFString(tempStringOf redlinedMsg)
+					}
+				}
+
+               delete(AbsNos2, absno)                    // remove from list2
+           } 
+           else 
+           {
+               addedTxt = addedTxt "object #" absno " only exists in " name1 "\n"
+               addedTxtRedlined = addedTxtRedlined "{\\i object #" absno " only exists in " name1 "}\n"
+               accept o1
+               diffs++
+           }
+       }//end for
+	
+	if(includeLinks){
+		//Free up memory
+		Module linkedMod
+		for linkedMod in openModList do{
+			if(fullName(linkedMod) == fullName(homeModule))continue
+			close linkedMod
+		}
+	}
+	
+       delete redlinedMsg
+   
+//---- Any objects remaining in list2 will not be in list1
+
+       for o2 in AbsNos2 do 
+       {
+           int absno = (int key AbsNos2)
+           deletedTxt = deletedTxt "object #" absno " only exists in " name2 "\n"
+           deletedTxtRedlined = deletedTxtRedlined "{\\i object #" absno " only exists in " name2 "}\n"
+           accept o2
+           diffs++
+       }//end for
+   
+       delete AbsNos1          // delete caches
+       delete AbsNos2
+   
+       if (diffs==0) 
+       {
+           infoBox "No differences found\n"
+           
+           //---------------------------------------------
+           //      create results dialog
+           //----------------------------------------------
+              DB bcDB = create "Baseline Comparison Results"
+   
+           // The DBE element which will store the comparison result in the rich text format
+              DBE redliningDBE = richText(bcDB,"","initial",500,300,true)
+           
+              realize bcDB  
+              useRTFColour(redliningDBE, true) // The usage of the perm allows redlining feature
+         
+              redlinedTxt += "{\\b No differences found.}\n"
+         
+              set(redliningDBE, redlinedTxt)
+              delete redlinedTxt
+   
+              show bcDB           
+
+       } 
+       else 
+       { // set filtering on in baselines
+   
+           if (diffs==1) 
+           {
+               infoBox "One difference found\n"
+           } 
+           else 
+           {
+               infoBox diffs " differences found\n"
+           }
+   
+           current = mod1              // set filters 
+           filtering on
+           refresh current
+           
+           current = mod2
+           filtering on
+           refresh current
+           
+           current = homeModule       // return to former current module
+   
+           if (txt != "") then
+           {
+               txt = "Modified Objects\n\n" txt
+           }
+           if (addedTxt != "" || deletedTxt != "") then
+           {
+               if (txt != "") then
+               {
+                   txt = txt "\n"
+               }
+               txt = txt "Added / Deleted Objects\n====================\n" addedTxt deletedTxt
+               redlinedTxt += "{\\b Added/Deleted Objects}\n" addedTxtRedlined deletedTxtRedlined
+           }
+           
+           //---------------------------------------------
+           //      create results dialog
+           //----------------------------------------------
+              DB bcDB = create "Baseline Comparison Results"
+   
+           // The DBE element which will store the comparison result in the rich text format
+              DBE redliningDBE = richText(bcDB,"","initial",500,300,true)
+           
+              realize bcDB  
+              useRTFColour(redliningDBE, true) // The usage of the perm allows redlining feature
+         
+              set(redliningDBE, redlinedTxt)
+              delete redlinedTxt
+   
+              show bcDB
+           //----------------------------------------------
+           //----------------------------------------------
+       }//end else
+       
+       delete (atrList) //delete Skip list of selected attributes jdn 041207
+       
+   }//end compareFn
+ 
+//------------------------  
+   void closeDown (DB w)
+//------------------------
+{
+	delete (baselines)
+	
+	hide (w)
+}
+   
+
+//-------------------------------------------------
+     void buildWin (Module m)
+//-------------------------------------------------
+{
+   win = create (TITLE ": \'" (name(m)) "\'")   //create win and add title
+
+   
+//------- Baseline selection lists ------------------------
+
+    list1 = list(win, "Older", 300, 10, empty)  
+    list2 = list(win, "Newer", 300, 10, empty)
+   
+    list1->"right"->"unattached"          // make lists side by side
+    list2->"left"->"flush"->list1
+    list2->"top"->"aligned"->list1
+    list2->"right"->"unattached"
+    
+//------- atribute selection list -----------------------
+
+    atrListDbe = multiList (win,"Attributes To Compare",6,empty)   //attribute selection list jdn 041207
+   
+//--------  compare button and show baseline option ------------
+
+    button(win, "Compare", compareFn)
+    beside win
+    string ch[] = ("Show Baselines")
+	string chk[] = ("Include Links")
+	showBL = checkBox (win, "", ch, 0)
+	showLK = checkBox (win, "", chk,0)
+	showLK->"right"->"unattached"
+	showLK->"left"->"flush"->showBL
+    close (win,true, closeDown)
+   
+                            
+   //-------------   initialize attribute select list with object property attributes       
+   
+    realize win   
+                                   
+    string str = ""
+    string str2 = ""
+    AttrDef at = null
+    for at in m do
+    {
+    	  if (at.object && !at.hidden) then
+    	  {
+    	  	  str = at.name
+           insert (atrListDbe,noElems(atrListDbe),str)
+        }
+    }//end for                                     
+    
+//------------- set default attribute selections based on default array  --------------- jdn 041307
+    
+    int i = 0
+    int x = 0
+    for (i = 0 ; i < noElems(atrListDbe) ; i++ )
+    {
+        str = get (atrListDbe,i)
+        
+        for (x = 0; x < sizeof (DEFAULT_ATTRIBUTES_TO_COMPARE) ; x++)
+        {
+        	  if DEFAULT_ATTRIBUTES_TO_COMPARE[x] == str then
+        	  	{
+        	  		set (atrListDbe,i,true)
+        	  		break
+        	  	}
+        }//endfor
+        
+    }//endfor
+   
+   
+// initialize baseline selection lists with current baselines in descending order
+
+     for b in m do 
+     {
+       str = (major b) "." (minor b) (suffix b)
+       put(baselines, str, b)                     //add baseline to skip lookup list jdn 041307
+       insert(list1, 0, str)
+       insert(list2, 0, str)
+     }
+ 
+//----- make 'current' first option
+      insert(list1, 0, "current")           
+      insert(list2, 0, "current")
+   
+   show win
+   
+}
+
+ //----------------------------------
+ //           MAIN 
+ //----------------------------------
+ 
+ //--------  check for pre-conditions   ------------
+   
+
+    homeModule = current Module
+
+   if (null homeModule) then
+   {
+       warningBox "Please run from an open module."
+       halt
+    }
+   
+//----  Determine if at least one baseline exists
+
+   bool atleastOne = false
+   
+   for b in homeModule do 
+   {
+     atleastOne = true
+     break
+   }
+    
+   if (!atleastOne) then
+   {
+     infoBox "No baselines to compare."
+     halt
+   }
+   
+//----- Pre-conditions check out.. ok to continue
+   
+   buildWin (homeModule)

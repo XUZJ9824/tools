@@ -1,0 +1,239 @@
+// epic_atn.dxl
+/*
+*  Revert Criticality attribute to the situation that was before running combined.dxl and create new EPIC Criticality attribute.	
+*
+*  "Run" mode reports on changes to be made AND attempts to make those changes
+*
+*  "Create minor baseline" creates new minor baseline, when module was modified and sets following comment: "CRITICALITY fix."
+*
+*  Results are logged to c:\temp\epic_fixit.txt
+*
+*  May 29, 2008 jsedlak   Initial release
+*
+*/
+pragma runLim, 0
+
+const string TITLE = "Fix undeleted objects"
+const string FORMAL = "Formal"
+
+const string NULLS[] = {}
+
+Buffer Results
+DB Db
+DBE FldrSpecDbe, FldrSpecBrowseDbe, ModNamesDbe, ResultsDbe, dbeCreateBaseline, dbeForceScript, dbeTest
+Item Itm
+Module CurMod, Mod, pb
+Object Obj
+Skip ModNames
+bool ProgressCancelled, CreateBaseline, HasProjectATNOption, HasSWReleaseOption, ForceScript, Test
+int ProgressInt, ProgressLimit
+string SelectedFldrSpec, ModName, SelectedModName, CurModSpec
+bool newAt
+bool multiAt
+string prev_name
+
+void ProcessObj() {
+    if (isDeleted(Obj)){
+        int absno = Obj. "Absolute Number"
+        Object delObj = object(absno, Mod)
+        if (!null(delObj) && !isDeleted(delObj))
+        if (Test)
+            ((Results += "\t") += identifier(delObj)) += "\n"
+        else
+            softDelete(delObj)
+    }
+}
+
+
+void ProcessMod() {
+        for Obj in entire pb do {
+            ProcessObj
+        }
+}
+
+void ProcessSelectedModName() {
+    bool baselined = false
+    progressMessage "Processing " SelectedModName
+    Baseline bas
+    Date d
+
+    if (Test)
+    {
+        Mod = read(SelectedFldrSpec "/" SelectedModName, false, false)
+    }
+    else
+    {
+        Mod = edit(SelectedFldrSpec "/" SelectedModName, false, false)
+        if (null Mod or ! isEdit Mod) {
+            ((Results += "\t{\\b ERROR: Could not edit module: ") += SelectedModName) += "}\n"
+            return
+        }
+    }
+
+    if (!ForceScript){
+        bas = getMostRecentBaseline(Mod)
+        d = Mod."Last Modified On"
+        if ((null bas) || (dateOf(bas) < d)){
+            Results += "\tERROR: Modul isn't baselined or is modified.\n"
+            if (isVisible Mod) {
+                refresh Mod
+                refreshExplorer Mod
+            } else {
+                close Mod
+            }
+            return
+        }
+    }
+
+    Baseline b
+    Baseline previousVer
+    bool bline_found = false
+    for b in current Module do {
+        if ((annotation(b) == "Project EPIC ATN and attribute CRITICALITY was added.") || (annotation(b) == "Added Criticality attribute and marked all items Level D.  Also added EPIC ATN project to project attribute.") || (annotation(b) == "Project EPIC ATN and attribute EPIC CRITICALITY were added."))
+        {
+            bline_found = true;
+            break
+        }
+        previousVer = b
+    }
+
+    if (!bline_found)
+    {
+        Results += "Baseline wasn't found.\n"
+        return
+    }
+        Results += "Baseline was found.\n"
+
+    pb = load(previousVer, false)
+
+    current = Mod
+
+    ProcessMod
+    
+    if ((!Test) && unsaved(Mod)) {
+        progressMessage "Saving changes to the module " SelectedModName
+        save Mod
+        if (CreateBaseline) {
+            create(Mod, nextMinor, "Undeleted objects were fixed.")
+            baselined = true
+        }
+    }
+
+    if (isVisible Mod) {
+        refresh Mod
+        refreshExplorer Mod
+    } else {
+        if (!baselined)
+        close Mod
+    }
+}
+
+void DiscardChanges() {
+    for SelectedModName in ModNamesDbe do {
+        Mod = module item SelectedFldrSpec "/" SelectedModName
+        if (! null Mod and ! isVisible Mod and unsaved Mod) close(Mod, false)
+    }
+}
+
+void DoIt() {
+    ForceScript = get dbeForceScript
+    CreateBaseline = get dbeCreateBaseline
+    Test = get dbeTest
+
+    Results = create
+    set(ResultsDbe, "")
+    ProgressInt = ProgressLimit = 0
+    ProgressCancelled = false
+    for SelectedModName in ModNamesDbe do ProgressLimit++
+    if (ProgressLimit == 0) {
+        errorBox "Please select module(s) to process"
+        return
+    }
+    progressStart(Db, TITLE, "", ProgressLimit)
+    for SelectedModName in ModNamesDbe do {
+        if (length Results > 0) Results += '\n'
+        ((Results += "Processing ") += SelectedModName) += '\n'
+        ProcessSelectedModName
+        progressStep ++ProgressInt
+        if (progressCancelled) {
+            ProgressCancelled = true
+            break
+        }
+    }
+    progressStop
+    if (ProgressCancelled) {
+        infoBox "Operation canceled by the user"
+        DiscardChanges
+    } else {
+        setFromBuffer(ResultsDbe, Results)
+    }
+    string filename = "c:\\temp\\epic_fixit.txt"
+    Stream out = write filename
+    out << Results
+    close out
+    delete Results
+    raise Db
+}
+
+void ApplySelected(DB db) {
+    DoIt
+}
+
+void PopulateModNamesDbe() {
+    empty ModNamesDbe
+    for Itm in folder SelectedFldrSpec do {
+        if (type Itm != FORMAL) continue
+        ModName = name Itm
+        put(ModNames, ModName, ModName)
+    }
+    int i = 0
+    for ModName in ModNames do {
+        insert(ModNamesDbe, i, ModName)
+        if (SelectedFldrSpec "/" ModName == CurModSpec) set(ModNamesDbe, i, true)
+        i++
+        delete(ModNames, ModName)
+    }
+}
+
+void FldrSpecBrowseDbeSelected(DBE dbe) {
+    SelectedFldrSpec = fnMiniExplorer(Db, MINI_EXP_FP, null, null)
+    if (! folder SelectedFldrSpec) return
+    set(FldrSpecDbe, SelectedFldrSpec)
+    PopulateModNamesDbe
+}
+
+void CloseSelected(DB db) {
+    delete ModNames
+    hide db
+}
+
+ModNames = createString
+SelectedFldrSpec = fullName current Folder
+CurMod = current Module
+if (null CurMod) {
+    CurModSpec = ""
+} else {
+    CurModSpec = fullName CurMod
+}
+Db = create(TITLE, styleCentered)
+FldrSpecDbe = field(Db, "Folder to process:", SelectedFldrSpec, 40, true)
+beside Db
+FldrSpecBrowseDbe = button(Db, "Browse...", FldrSpecBrowseDbeSelected)
+left Db
+label(Db, "Select module(s) to process:")
+ModNamesDbe = listView(Db, listViewOptionMultiselect, 400, 15, NULLS)
+
+dbeCreateBaseline = toggle(Db, "Create minor baseline", false)
+dbeForceScript = toggle(Db, "Run scrip in any cases", false)
+dbeTest = toggle(Db, "Test only", true)
+
+ResultsDbe = richText(Db, "Results", "", 400, 300, true)
+apply(Db, "Run", ApplySelected)
+close(Db, true, CloseSelected)
+realize Db
+setExtraHeightShare(ModNamesDbe, 0.5)
+setExtraHeightShare(ResultsDbe, 0.5)
+insertColumn(ModNamesDbe, 0, "Module Name", 394, iconNone)
+PopulateModNamesDbe
+setCenteredSize(Db, 450, 650)
+show Db

@@ -1,0 +1,553 @@
+/* =============================================================================
+ *  SRD ATTRIBUTES CHECK
+ * 
+ *  SRD Attributes Check use for self review and review of others work.
+ *  It checks various error combinations of attributes.
+ *
+ *  CHECKED ATTRIBUTES:
+ *  Requirement, Derived Requirement, Deferred Requirement, Test Method,
+ *  Requirement Allocation, EPIC Criticality, Project, SW Release,
+ *  Object Level and linking to SRS
+ *  
+ *  Copyright © March 2015 Honeywell, Tomas Valko
+ *
+ *  REVISION HISTORY:
+ *  Date         Name       Description
+ *  -----------  -------    -----------
+ *  19-OCT-2012  T.Valko    Initial development
+ *  22-OCT-2012  T.Valko    Added check for Project and SW Release
+ *  24-OCT-2012  T.Valko    Added check for Linking to SRS
+ *  07-NOV-2012  T.Valko    Added check for Object Level
+ *  31-JAN-2013  T.Valko    Added SRD baseline number to the printout
+ *  25-FEB-2013  T.Valko    Added check for Deferred Req linking
+ *  06-MAY-2013  T.Valko    Fixed filtering for EPIC Criticality
+ *                          Added filter for SW_Release EPIC Block 2.61
+ *                          Updated checker for Project and SW Release combo
+ *  30-MAY-2013  T.Valko    Added check if EPIC Criticality attr is defined
+ *  09-APR-2014  T.Valko    Fixed filtering for SW Release
+ *  02-JUL-2014  T.Valko    Code cleanup, checking of existing attributes
+ *  30-MAR-2015  T.Valko    Changed logic how SW Release filter is defined
+ *
+ ******************************************************************************/
+
+/* =============================================================================
+ * GLOBAL FLAGS
+ *
+ ******************************************************************************/
+
+/* Modify SILENT_MODE flag to turn on/off pop-up windows */
+
+const bool SILENT_MODE = true
+
+/* =============================================================================
+ * DON'T MODIFY SCRIPT UNDER, UNLESS YOU WANT TO CHANGE BEHAVIOR
+ *
+ ******************************************************************************/
+
+/* Create output buffer and define ouput colors */
+Buffer output = create
+output += "{\\colortbl;"
+output += "\\red0\\green0\\blue0;"        /* 1 - black */
+output += "\\red255\\green0\\blue0;"      /* 2 - red   */
+output += "\\red0\\green0\\blue255;"      /* 3 - blue  */
+output += "\\red150\\green150\\blue150;}" /* 4 - gray  */
+
+/* Global flag, if any error was found */
+bool NO_PROBLEM_FOUND = true
+
+/* =============================================================================
+ * LOCAL FUNCTIONS:
+ *    set_EPIC_global_project
+ *    count_objects_in_view
+ *    list_objects_IDs_in_view
+ *    show
+ *    show_empty
+ *    check_object_level
+ *
+ ******************************************************************************/
+
+/* Compose Filter for EPIC Only PROJECT attribute */
+Filter set_EPIC_global_project() {
+   Filter Project_ATN = contains(attribute "Project", "EPIC ATN", false)
+   Filter Project_AOA = contains(attribute "Project", "EPIC AOA", false)
+   Filter Project_POA = contains(attribute "Project", "EPIC POA", false)
+   
+   Filter Project_EPIC = (Project_POA || Project_AOA || Project_ATN)
+   
+   return Project_EPIC
+}
+
+/* Return minimal value, don't use negative values */
+int min (int a, int b) {
+   /* Don't use negative values */
+   if (a < 0)
+      return b
+
+   if (b < 0)
+      return a
+
+   /* Return minimum */
+   if (a < b)
+      return a
+   else
+      return b
+}
+
+/* Parse out Table number from table caption */
+string get_table_string (Object o) {
+   /* local variables */
+   Buffer buf = create
+   int sdd_id
+   int idx_t, idx_s, idx_d, idx_dd
+   int min_temp, min_final
+   string result
+   
+   /* get data from object */
+   buf = o."Object Text"
+   sdd_id = o."Absolute Number"
+
+   /* search for substrings */
+   idx_t = contains (buf, "Table ", 0)
+   idx_s = contains (buf, ' ', idx_t + 6)
+   idx_d = contains (buf, '.', idx_t + 6)
+   idx_dd = contains (buf, ':', idx_t + 6)
+ 
+   /* determine position of Table XYZ */
+   min_temp = min(idx_s - 1, idx_d - 1)
+   min_final = min(idx_dd - 1, min_temp)
+
+   /* return Table XYZ used for filtering */
+   result = buf[idx_t:min_final]
+
+   return result
+}
+
+/* Function to count filtered objects */
+int count_objects_in_view() {
+    int count = 0
+    
+    Object o
+    for o in (current Module) do count++
+    
+    return count
+}
+
+/* Add message to the output log */
+void list_objects_IDs_in_view(string title) {
+    Object o
+    int count = 0
+    bool first = true
+    
+    output += "{" title "}: "
+    for o in (current Module) do {
+        if (first) {
+            output += "{\\cf2 " o."Absolute Number" "}"
+            first = false
+        }
+        else {
+            output += ", {\\cf2 " o."Absolute Number" "}"
+        }
+        count++
+    }
+    
+    /* if there is no object ID to print,
+       print at least 0 */
+    if (count == 0) output += "{\\cf3 0}"
+    
+    output += "{\n}"
+}
+
+/*
+    "show" sets the passed filter, refreshes
+    the screen and waits for the next filter.
+    It modifies input filter with GLOBAL PROJECT filter
+*/
+void show(Filter f, string msg) {
+   
+   Filter Project_f = set_EPIC_global_project()
+   
+   Filter final_filter = Project_f && f
+   set final_filter
+   refresh current
+   
+   list_objects_IDs_in_view(msg)
+    
+   int count = count_objects_in_view()
+
+   if (count > 0) NO_PROBLEM_FOUND = false
+
+   if (!SILENT_MODE) {
+      msg = msg "\n\nNumber of Errors: " count "\n\nReady for next filter?"
+
+      /* use different box for info and error messages */
+      if (count == 0) infoBox msg
+      else ack msg
+   }
+}
+
+/*
+    "show_empty" sets the passed filter, refreshes
+    the screen and waits for the next filter.
+    No modification to input filter.
+*/
+void show_empty(Filter f, string msg) {
+   
+   Filter Project_f = set_EPIC_global_project()
+   
+   Filter final_filter = Project_f && f
+   set final_filter
+   refresh current
+   
+   list_objects_IDs_in_view(msg)
+    
+   int count = count_objects_in_view()
+
+   if (count > 0) NO_PROBLEM_FOUND = false
+
+   if (!SILENT_MODE) {
+      msg = msg "\n\nNumber of Errors: " count "\n\nReady for next filter?"
+
+      /* use different box for info and error messages */
+      if (count == 0) infoBox msg
+      else ack msg
+   }
+}
+
+/*  
+    checks if current object has same level as previous one
+    checks that current obj is one level down after Heading object
+*/
+void check_object_level() {
+    
+    Object o_cur, o_prev
+    bool first = true
+    bool compare = false
+    string heading
+    
+    output += "{Object Level Error}: "
+    
+    for o_cur in (current Module) do {
+        if (compare) {
+            heading = o_prev."Object Heading"
+            // if current object is level down
+            if (level(o_cur) > level(o_prev)){
+                // and previous object has empty Heading
+                if (length(heading) == 0){
+                    // and current and previous objects does not contain OLE
+                    if (!containsOle(o_cur."Object Text") && !containsOle(o_prev."Object Text")){ 
+                        // Error in Object Level Attribute
+                        if (first) {
+                            output += "{\\cf2 " o_cur."Absolute Number" "}"
+                            first = false
+                        }
+                        else {
+                            output += ", {\\cf2 " o_cur."Absolute Number" "}"
+                        }
+                        NO_PROBLEM_FOUND = false
+                    }
+                }
+            }
+            // if previous object has Heading
+            else if (length(heading) > 0){
+                // and current object has empty Heading
+                heading = o_cur."Object Heading"
+                if (length(heading) == 0){
+                    // and current object is not 1 level down
+                    if (level(o_cur) - level(o_prev) != 1){
+                        // Error in Object Level Attribute
+                        if (first) {
+                            output += "{\\cf2 " o_cur."Absolute Number" "}"
+                            first = false
+                        }
+                        else {
+                            output += ", {\\cf2 " o_cur."Absolute Number" "}"
+                        }
+                        NO_PROBLEM_FOUND = false
+                    }
+                }
+            }
+        }
+        o_prev = o_cur
+        compare = true
+    }
+    
+    if (first) output += "{\\cf3 0}"
+}
+
+void check_table_numbering () {
+   Object o
+   string table_str
+   bool first = true
+   
+   output += "{Table Numbering Summary}: "
+   
+   filtering on
+   Filter Is_Table = contains (attribute "Object Text", "Table ", true)
+   set Is_Table
+   refresh current
+   
+   for o in (current Module) do {
+      table_str = get_table_string (o)
+      if (first) {
+         output += "{\\cf3 " o."Absolute Number" ": }"
+         output += "{\\cf0 " table_str "}"
+         first = false
+      }
+      else {
+         output += ", {\\cf3 " o."Absolute Number" ": }"
+         output += "{\\cf0 " table_str "}"
+      }
+   }
+   
+   filtering off
+}
+
+/* =============================================================================
+ * FILTER DEFINITIONS
+ *
+ ******************************************************************************/
+
+filtering on
+
+/* Find which attributes are present in current Module */
+Module m = current Module
+AttrDef find_epic_criticality = find (m, "EPIC Criticality")
+AttrDef find_test_method = find (m, "Test Method")
+AttrDef find_req_allocation = find (m, "Requirement Allocation")
+
+/* Filter definition */
+Filter Req_Empty = isNull(attribute "Requirement")
+Filter Der_Empty = isNull(attribute "Derived Requirement")
+Filter Def_Empty = isNull(attribute "Deferred Requirement")
+Filter Project_Empty = isNull(attribute "Project")
+Filter SW_Release_Empty = isNull(attribute "SW Release")
+Filter Tst_Empty
+if (!null find_test_method){
+   Tst_Empty = isNull(attribute "Test Method")
+}
+Filter Alloc_Empty
+if (!null find_req_allocation){
+   Alloc_Empty = isNull(attribute "Requirement Allocation")
+}
+Filter Crit_Empty
+if (!null find_epic_criticality){
+   Crit_Empty = isNull(attribute "Epic Criticality")
+}
+
+Filter Criticality
+if (!null find_epic_criticality){
+   Criticality = contains(attribute "EPIC Criticality", "C", false) || 
+                 contains(attribute "EPIC Criticality", "D", false)
+}
+
+Filter Object_has_shall = contains(attribute "Object Text", "shall", false)
+Filter Project_ATN = contains(attribute "Project", "EPIC ATN", false)
+Filter Project_AOA = contains(attribute "Project", "EPIC AOA", false)
+Filter Project_POA = contains(attribute "Project", "EPIC POA", false)
+Filter Project_EPIC = set_EPIC_global_project()
+
+/* Determine available SW Releases in module */
+AttrDef  ad = find(current Module,"SW Release")
+AttrType at = ad.type
+Skip     sk_old = createString()
+Skip     sk_aoa = createString()
+Skip     sk_atn = createString()
+int      i = 0
+string   Enum
+int      offset = null
+int      len = null
+
+for (i = 0; i < at.size; i++)
+{
+   if (findPlainText (at.strings[i], "EPIC Block 0.", offset, len, false, false))
+   {
+      put(sk_old,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 1.", offset, len, false, false))
+   {
+      put(sk_aoa,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 2.", offset, len, false, false))
+   {
+      put(sk_atn,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 3.", offset, len, false, false))
+   {
+      put(sk_atn,at.strings[i],at.strings[i])
+   } 
+}
+
+Filter SW_Release_Epic_Base = contains(attribute "SW Release", "Epic Baseline", false)
+Filter SW_Release_Epic_Common = SW_Release_Epic_Base
+Filter f_temp
+for Enum in sk_old do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+   
+   SW_Release_Epic_Common = SW_Release_Epic_Common || f_temp
+}
+
+Filter SW_Release_AOA = SW_Release_Epic_Common
+for Enum in sk_aoa do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+
+   SW_Release_AOA = SW_Release_AOA || f_temp
+}
+
+Filter SW_Release_ATN = SW_Release_Epic_Common
+for Enum in sk_atn do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+
+   SW_Release_ATN = SW_Release_ATN || f_temp
+}
+
+Filter SW_Release_EPIC = (SW_Release_AOA || SW_Release_ATN)
+/* End of SW Releases filters */
+
+Filter Req_False = attribute "Requirement" == "False"
+Filter Req_True = attribute "Requirement" == "True"
+Filter Tst_Method_NA
+Filter Tst_Method_App
+if (!null find_test_method){
+   Tst_Method_NA = attribute "Test Method" == "Not Applicable "
+   Tst_Method_App = attribute "Test Method" != "Not Applicable "
+}
+Filter Der_True = attribute "Derived Requirement" == "True"
+Filter Der_False = attribute "Derived Requirement" == "False"
+Filter Def_True = attribute "Deferred Requirement" == "True"
+Filter Def_False = attribute "Deferred Requirement" == "False"
+Filter Req_Alloc_SW
+Filter Req_Alloc_NA
+if (!null find_req_allocation){
+   Req_Alloc_SW = attribute "Requirement Allocation" == "Software"
+   Req_Alloc_NA = attribute "Requirement Allocation" != "Software"
+}
+
+Filter Has_Outgoing_Links = hasLinks(linkFilterOutgoing, "*")
+Filter Has_No_Outgoing_Links = hasNoLinks(linkFilterOutgoing, "*")
+Filter Has_Incoming_Links = hasLinks(linkFilterIncoming, "*")
+Filter Has_No_Incoming_Links = hasNoLinks(linkFilterIncoming, "*")
+/* =============================================================================
+ * FILTER USAGE
+ *
+ ******************************************************************************/
+
+/* Add header to the output log */
+output += "{\\b " name (current Module) "} "
+output += "{Baseline \\b " version (current Module) "}\n\n"
+
+/* Empty values */
+output += "{\\b EMPTY attributes\n}"
+show_empty(Req_Empty, "\t Requirement")
+show_empty(Der_Empty, "\t Derived Requirement")
+show_empty(Def_Empty, "\t Deferred Requirement")
+if (!null find_test_method)
+   show_empty(Tst_Empty, "\t Test Method")
+else
+   output += "{\\cf4 \t Test Method: NA}\n"
+
+if (!null find_epic_criticality)
+   show(Project_EPIC && Crit_Empty, "\t EPIC Criticality")
+else
+   output += "{\\cf4 \t EPIC Criticality: NA}\n"
+
+if (!null find_req_allocation)
+   show(Alloc_Empty, "\t Requirement Allocation")
+else
+   output += "{\\cf4 \t Requirement Allocation: NA}\n"
+
+show(Project_Empty, "\t Project")
+show(SW_Release_Empty, "\t SW Release")
+output += "{\n}"
+
+/* Project & SW Release */
+show(Project_EPIC && !SW_Release_EPIC, "Project is EPIC (POA, AOA or ATN) but SW Release has no EPIC build")
+show(Project_ATN && (!Project_AOA) && (!Project_POA) && (!SW_Release_ATN), "Project is ATN only but SW Release has no ATN build")
+show(Project_AOA && (!Project_ATN) && (!Project_POA) && (!SW_Release_AOA), "Project is AOA only but SW Release has no AOA build")
+output += "{\n}"
+
+/* Requirements */
+show(Req_False && Der_True, "Requirement is False but Derived Requirement is True")
+show(Req_False && Def_True, "Requirement is False but Deferred Requirement is True")
+show(Req_False && Object_has_shall, "Requirement is False but Object Text contains word SHALL")
+output += "{\n}"
+
+/* Test method */
+if (!null find_test_method){
+   show(Req_False && Tst_Method_App, "Requirement is False but Test Method is Applicable")
+   show(Req_True && Tst_Method_NA, "Requirement is True but Test Method is Not Applicable")
+}
+else {
+   output += "{\\cf4 Requirement is False but Test Method is Applicable: NA}\n"
+   output += "{\\cf4 Requirement is True but Test Method is Not Applicable: NA}\n"
+}
+output += "{\n}"
+
+/* Criticality */
+if (!null find_epic_criticality)
+   show(Project_EPIC && !Criticality, "EPIC Criticality is not C or D")
+else
+   output += "{EPIC Criticality is not D: attribute does not exist}"
+output += "{\n}"
+
+/* Req Allocation */
+if (!null find_req_allocation){
+   show(Req_False && Req_Alloc_SW, "Requirement is False but Req Allocation is Software")
+   show(Req_True && Req_Alloc_NA, "Requirement is True but Req Allocation is not Software")
+}
+else {
+   output += "{\\cf4 Requirement is False but Req Allocation is Software: NA}\n"
+   output += "{\\cf4 Requirement is True but Req Allocation is not Software: NA}\n"
+}
+output += "{\n}"
+
+/* Links and Requirements */
+show(Req_True && Der_False && Has_No_Outgoing_Links, "Requirement is True and is NOT Derived but has no outgoing links")
+show(Der_True && Has_Outgoing_Links, "Derived Requirement is True but has outgoing links")
+show(Req_False && Has_Outgoing_Links, "Requirement is False but has outgoing links")
+show(Req_False && Has_Incoming_Links, "Requirement is False but has incoming links")
+show(Def_True && Has_Incoming_Links, "Deferred Requirement is True but has incoming links")
+show(Req_True && Def_False && Has_No_Incoming_Links, "Requirement is True and is NOT Deferred but has no incoming links")
+output += "{\n}"
+
+filtering off
+
+/* Object Level Attribute */
+check_object_level ()
+output += "{\n\n}"
+
+// Check Numbering of the tables
+//check_table_numbering ()
+//output += "{\n}"
+
+/* =============================================================================
+ * END OF FILTER USAGE
+ *
+ ******************************************************************************/
+
+/* Pop up result window */
+if (NO_PROBLEM_FOUND == true){
+    infoBox "NO PROBLEMS IN ATTRIBUTES."
+}
+else{
+    ack "ERRORS IN ATTRIBUTES!!!"
+}
+
+/* =============================================================================
+ * OUTPUT WINDOW
+ *
+ ******************************************************************************/
+DB bcDB = create "SRD Check Attributes Results"
+   
+/* The DBE element which will store the check result in the rich text format */
+DBE redliningDBE = richText(bcDB, "", "initial", 570, 600, true)
+realize bcDB  
+useRTFColour(redliningDBE, true) // The usage of the perm allows redlining feature
+set(redliningDBE, output)
+delete output
+show bcDB
+
+/* =============================================================================
+ * END OF DXL SCRIPT
+ *
+ ******************************************************************************/
+ 

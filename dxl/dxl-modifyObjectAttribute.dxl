@@ -1,0 +1,16 @@
+string strNameAttribute= "testsong"
+string strKeyWord="test0"
+string strAddWord="test4"
+
+
+AttrType at= find (current Module, strNameAttribute) 
+
+Object o
+for o in current Module do
+{	
+	string tmpstr= o.strNameAttribute
+	if(matches(strKeyWord,tmpstr))
+	{
+		o.strNameAttribute= tmpstr"\n"strAddWord"\n"
+	}
+}

@@ -1,0 +1,43 @@
+//############################################################################
+//#
+//# List all modules of a certain type
+//#
+//# Modifications:
+//#
+//# Date:        Who:    Description:
+//# 09 Jul 2004  Baran   Baseline
+//#
+//############################################################################
+
+pragma runLim,0 // turn off the timeout dialog
+
+// The modules that will be looked at must start with this string
+//string szModuleID  = "SW_SRD_";
+string szModuleID  = "ICD_";
+string ModuleName
+
+int  iProgLine    = 0;     // Current element to write to in progress box
+bool bShowProg    = false; // Shows that the progress box is displayed
+bool bRestartProg = false; // This is need because DOORS blows away 
+                           // the progress box on a handled exception
+bool   bDRError   = false; // used to avoid duplicate error messages for a module
+bool   bDFRError  = false; // used to avoid duplicate error messages for a module
+Buffer sbOTBuff;           // A buffer for working with Ojbect Text
+
+#include "UtilityRoutines.dxl"
+
+Stream FileList = write "c:/temp/FileList.txt"
+
+//******************************************************************************
+// Main
+//******************************************************************************
+
+   FileList << "Report of all DOORS Formal modules of a certain type.\n\n"
+   for ModuleName in current Project do {
+       if (match_prefix (ModuleName, szModuleID)){
+          print ModuleName "\n"
+          FileList << ModuleName "\n"
+       }
+   }
+
+close (FileList)

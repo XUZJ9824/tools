@@ -1,0 +1,297 @@
+Module m= current;
+
+DB DB_hmi;
+DBE listDBE_v1, listDBE_v2, listDBE_cr, toggleDEB_cr;
+
+
+void compareBaselines(Baseline bl1, Baseline bl2, string cr)
+{
+//	Filter f;
+//	f= attribute "CR"!=" 34";
+//	f= contains (attribute "CR", cr, true)
+	
+	if(length(cr)==0)
+	{
+		
+	}
+
+	Module m;
+	Object o;
+	int absno;
+
+	int i1, i2;
+
+	i1= i2= 0;
+	r1= r2= 0;
+
+	m= load(bl1, false);
+//	r1= r2= 0;
+//	set(m,f, r1, r2);
+//	filtering on;
+
+	Skip l1 = create 
+	for o in m do
+	{
+		i1++;
+		absno= o."Absolute Number";
+		put(l1, absno, o)
+	}
+//	filtering off;
+//	print "i1=" i1  " r1=" r1 " r2=" r2 "\n";
+
+
+	m= load(bl2, false);
+//	r1= r2= 0;
+//	set(m,f, r1, r2);
+//	filtering on;
+	Skip l2 = create 
+	for o in m do
+	{	
+		i2++;
+		absno= o."Absolute Number";
+		put(l2, absno, o);
+	}
+//	filtering off
+//	print "i2=" i2 " r1=" r1 " r2=" r2"\n";
+
+	int i3= 0;
+	int i4= 0;
+	Object tmpo;
+	Buffer strtextbuf_modify= create
+	Buffer strtextbuf_adddel= create
+
+
+	DB DB_result= create "Compare Result Box";
+	DBE textDBE= text(DB_result, "", " ", 500, 300, false);
+	
+
+	i1= i2= 0;
+	for o in l1 do
+	{
+		if(get(toggleDEB_cr))
+		{	
+			string strcr= o."CR"
+			if(!matches(cr[6:], strcr) )
+			{
+				continue;
+			}
+			print o."Absolute Number" "cr[" cr "]  crstr[" strcr "]\n"
+		}
+		
+		absno= o."Absolute Number";
+		if(find(l2, absno, tmpo))
+		{
+			i2++;
+		}
+		else
+		{
+			i1++;
+			strtextbuf_adddel += "object #" absno " only exists in " (major bl1)"."(minor bl1)"\n"
+		}
+	}
+//	print "i1[" i1 "] i2[" i2 "] i3[" i3 "] i4[" i4 "]\n"
+	
+	strtextbuf_adddel += "\n";
+	i1= i2= 0;
+	for o in l2 do
+	{
+		if(get(toggleDEB_cr))
+		{
+			string strcr= o."CR"
+			if(!matches(cr[6:], strcr) )
+			{
+				continue;
+			}
+		}
+		
+		absno= o."Absolute Number";
+		if(find(l1, absno, tmpo))
+		{
+			i2++;
+			string str1= o."Object Text";
+			string str2= tmpo."Object Text";
+			if(str1 != str2)
+			{
+				i4++; 
+				strtextbuf_modify += "object #" absno " has differing Object Text\n" (major bl1)"."(minor bl1) "[" str1 "]\n" (major bl2)"."(minor bl2) "[" str2 "]\n" "\n" 				
+			}
+		}
+		else
+		{
+			i1++;
+			strtextbuf_adddel += "object #" absno " only exists in " (major bl2)"."(minor bl2)"\n"
+		}
+	}
+//	print "i1[" i1 "] i2[" i2 "]\n"
+
+	strtextbuf_modify += "\n";
+	strtextbuf_modify += strtextbuf_adddel;
+
+	set(textDBE, stringOf(strtextbuf_modify));
+
+	delete strtextbuf_modify;
+	delete strtextbuf_adddel;
+	delete l1;
+	delete l2;
+	
+	show (DB_result);
+}
+
+void getMajorMinorSuffix(string str, int &ma, int &mi, string &su)
+{
+	int i= 0;
+	
+	int offset_dot= 0;
+	int offset_su_start= 0;
+	int offset_su_end= 0;
+	int offset_name_start= 0;
+	
+	
+	su= null;
+
+	for(i=0;i<length(str);i++)
+	{
+		if(str[i]=='.' && offset_dot==0)
+		{
+			offset_dot= i;
+		}
+		else if(str[i]=='(' && offset_su_start==0)
+		{
+			offset_su_start= i;
+		}
+		else if(str[i]==')' && offset_su_end==0)
+		{
+			offset_su_end= i;
+		}
+		else if(str[i]=='<' && offset_name_start==0)
+		{
+			offset_name_start= i;
+			break;
+		}
+		else{}
+	}
+//	print "offset_dot:"offset_dot " offset_su_start:"offset_su_start " offset_su_end:"offset_su_end " offset_name_start:"offset_name_start "\n"
+
+	ma= intOf(str[0:offset_dot-1]);
+
+	if(offset_su_start!=0 && offset_su_end!=0)
+	{	
+		mi= intOf(str[offset_dot+1:offset_su_start-1]);
+		su= str[offset_su_start+1:offset_su_end-1];
+	}
+	else
+	{
+		mi= intOf(str[offset_dot+1:offset_name_start-1]);
+
+	}
+	
+//	print "ma:"ma " mi:"mi " su:"su "\n"
+}
+
+void doWork(DB db)
+{
+	string strBl1= get(listDBE_v1);
+	string strBl2= get(listDBE_v2);
+	string strCR = get(listDBE_cr);
+
+	int major1, major2;
+      int minor1,	minor2;
+	string suffix1, suffix2;
+	
+	
+	if(strBl1=="" || strBl2=="" ||(get(toggleDEB_cr) && strCR=="" ))
+	{
+		string buttons[] = {"OK"} 
+		messageBox("Please choice Baseline or CR!", buttons, msgWarning) 
+	}
+	else
+	{
+//		print "v1:"strBl1"  v2:"strBl2"  cr:"strCR "\n";	
+
+		getMajorMinorSuffix(strBl1, major1, minor1, suffix1);
+		getMajorMinorSuffix(strBl2, major2, minor2, suffix2);
+		
+//		print "ma:"major1 " mi:"minor1 " su:"suffix1"\n"
+//		print "ma:"major2 " mi:"minor2 " su:"suffix2"\n"
+
+		compareBaselines(baseline(major1,minor1,suffix1), baseline(major2,minor2,suffix2), strCR);
+	}
+}
+
+void selectCR(DBE dbe)
+{
+	if(get(dbe))
+	{
+		active(listDBE_cr);
+	}
+	else
+	{
+		inactive(listDBE_cr);
+	}	
+}
+
+
+void creatDB()
+{
+	string strArrCR[100];
+	int CRNum= 0;
+	for(CRNum=0; CRNum<30; CRNum++)
+	{	
+		strArrCR[CRNum]= "PVCSD_CMU_CR_"(9100+CRNum)"";
+	}
+
+
+	string strArrBaseline[100];
+	int BaselineNum= 0;
+	Baseline b;
+	for b in m do 
+	{	
+		if(length(suffix b)>0)
+		{
+			strArrBaseline[BaselineNum++]= (major b)"."(minor b)"("(suffix b)")""<"(user b)">"
+		}
+		else
+		{
+			strArrBaseline[BaselineNum++]= (major b)"."(minor b)"<"(user b)">"
+		}
+	
+//		print "<"(major b) "." (minor b)"> <" (suffix b) "> <" (user b) "> <" (dateOf b) "> <" (annotation b) ">\n"
+//		print strArrBaseline[BaselineNum-1] "\n"
+	} 
+
+
+	DB_hmi = create ("Hmi Compare Box") 
+
+	DBE lblDBE_p= label(DB_hmi, name(current Project))
+	beside(DB_hmi);
+	DBE lblDBE_m= label(DB_hmi, name(current Module))
+	beside(DB_hmi);
+	toggleDEB_cr = toggle(DB_hmi, "CR", true);
+	
+	set(toggleDEB_cr, selectCR);
+
+	listDBE_cr= list (DB_hmi, "CR", 200, 10, strArrCR, CRNum)
+	
+
+	listDBE_v1= list (DB_hmi, "Baseline1", 200, 10, strArrBaseline, BaselineNum)
+	listDBE_v2= list (DB_hmi, "Baseline2", 200, 10, strArrBaseline, BaselineNum)
+	
+
+	listDBE_cr->"right"->"unattached"
+	listDBE_v1->"left"->"flush"->listDBE_cr
+	listDBE_v1->"top"->"aligned"->listDBE_cr
+
+
+
+	listDBE_v1->"right"->"unattached"
+	listDBE_v2->"left"->"flush"->listDBE_v1
+	listDBE_v2->"top"->"aligned"->listDBE_v1
+
+
+	apply(DB_hmi, "apply", doWork);
+	show(DB_hmi);
+}
+
+creatDB()
+
+

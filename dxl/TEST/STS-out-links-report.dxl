@@ -1,0 +1,64 @@
+﻿Module m = current;
+Link lnk;
+Object o;
+
+string buttons[] = {"Done"};
+
+
+string strCsvFile = "D:\\" name(m) ".CSV";
+string strTxtFile = "D:\\" name(m) ".TXT";
+string objHeading = "";
+string objNumber = "";
+string strTcName = "";
+string strRqmnt = "";
+string lnkMod = "";
+string strModName = "";
+
+bool hasLnk = false;
+
+Stream cvsFile = null;
+
+csvFile = write strCsvFile;
+
+
+csvFile << "Test Script Module Name" "," "STS Object ID" "," "Test Case Module Name" ",";
+csvFile << "STC Object ID" "," "Test Case Name" "," "Link Module\n";
+
+
+for o in m do
+{
+    Object objTgt;
+    lnkMod = "";
+    string strRqmnt;
+    strRqmnt = "";
+    objNumber = number(o);
+    hasLnk = false;
+    for lnk in o -> "*" do
+    {
+        if(!(null lnk))
+        {
+            Object objLnk = target(lnk);
+            strModName = target(lnk);
+            Module mLnk = module(lnk);
+            ModName_ mlnk = target(lnk);
+            string szLnk = fullName(mlnk);
+            if(!open(mlnk)) then read(szLnk, false);
+            lnkMod = name mLnk;
+            strRqmnt = identifier(objLnk);
+            objId = identifier(o);
+
+            csvFile << name(m) ",";
+            csvFile << identifier(o) ",";
+            csvFile << strModName ",";
+            csvFile << strRqmnt ",";
+            csvFile << objLnk."Object Heading" ",";
+            csvFile << lnkMod "\n";
+        }
+    }
+}
+
+close csvFile;
+
+string msg = "Done.\n" "Report Saved to:\n" strCsvFile;
+
+messageBox(msg, buttons, msgInfo);

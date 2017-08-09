@@ -1,0 +1,349 @@
+//###############################################
+//# Utility Functions
+//###############################################
+int      iProgLine    = 0;     // Current element to write to in progress box
+bool     bShowProg    = false; // Shows that the progress box is displayed
+bool     bRestartProg = false; // This is need because DOORS blows away 
+                               // the progress box on a handled exception
+bool     bDRError     = false; // used to avoid duplicate error messages for a module
+bool     bDFRError    = false; // used to avoid duplicate error messages for a module
+Buffer   sbOTBuff;             // A buffer for working with Ojbect Text
+
+string startProj = path(current Project) name(current Project)
+
+//***************************************************
+//* Checks if module name starts with correct prefix
+//***************************************************
+bool match_prefix(string module_name, string prefix) 
+{
+    return (module_name[0:(length prefix) - 1] == prefix)
+}
+
+//***********************************************
+//* Returns the number of objects in the module
+//***********************************************
+int count_objects (Module m) {
+	int count = 0
+	Object o
+	for o in m do count++
+    return count
+}
+
+//***********************************************
+//* Returns the number of modules in the project
+//***********************************************
+int count_modules (Project p) {
+	int count = 0
+	string m
+	for m in p do count++
+    return count
+}
+
+//***********************************************
+//* Returns the number of formal modules in the Project
+//***********************************************
+int count_formal_modules (Project p) {
+	int count = 0
+    Item 	 m
+	for m in p do {
+        if ((type m) == "Formal") count++
+    }
+    return count
+}
+
+//*******************************************************
+//* Fills a list with the labels from an attribute type.
+//*******************************************************
+void fill_list(string str_list[], AttrType attr_type)
+{
+    int i;
+
+    for(i = 0 ; i < attr_type.size ; ++i) {
+        str_list[i] = attr_type.strings[i];
+    }
+}
+
+//***************************************************
+//* Returns TRUE if the object contains a Requirement
+//***************************************************
+bool Is_Requirement(Object check_obj) {
+	if (null(check_obj)) return false
+
+	bool dr = check_obj."Deferred Requirement"
+	if (dr)	return false
+
+	string txt    // Object text
+	RichText rt
+	txt = richText check_obj."Object Text"
+	for rt in txt do {
+		string w = rt.text
+
+		if (rt.bold) {
+			int ln = length(w)
+			while (ln >= 5 && w[0:0] <= " ") {
+				ln--
+				w = w[1:ln]
+			}
+			if (ln >= 5 && w[0:4] == "shall" && (ln == 5 || w[5:5] <= " ")) return true
+		}
+	}
+	return false
+}		
+
+//***********************************************
+//* Ends the DXL script with a message box
+//***********************************************
+void terminate (string error_str)
+{
+    if(bShowProg) {
+            progressStop;
+    }
+
+    ack error_str;
+    error error_str;
+}
+
+//***********************************************
+//* Returns an attribute type pointer for an 
+//* attribute name.
+//***********************************************
+AttrType get_type (string attr_name, Module m)
+{
+    AttrDef attr_ptr;
+    AttrType attr_type_ptr;
+
+    attr_ptr = find(m, attr_name);
+    if(null attr_ptr) {
+        attr_type_ptr = null;
+    } else {
+        attr_type_ptr = find(m, attr_ptr.typeName);
+    }
+
+    return attr_type_ptr;
+}
+
+//***********************************************
+//* Opens source link modules for an object in a different project
+//*
+//* Note: The fullName function is the trick
+//***********************************************
+void openDestLmProj (Object o)
+{
+   ModName_ dstModRef 
+   Link lnk 
+
+   for lnk in o->"*" do {
+       dstModRef = target lnk
+       read(fullName(dstModRef), false)
+   }
+}
+
+//******************************************************************************
+// Function: InStr
+// Purpose:  Find a substring within a string
+// Inputs:   SrcStr - String to search
+//           DstStr - Substring to search for
+// Returns:  0 - substring not found
+//           Non 0 - substring found
+// Sample Use:
+//           if (InStr(strProj,"EPIC") != 0) do something
+//******************************************************************************
+int InStr(string SrcStr, string DstStr)
+{ 
+
+   int idx;     //Loop counter
+   int SrcLen;  //Length of Source string
+   int DstLen;  //Length of destination string
+
+   SrcLen = length(SrcStr);
+   DstLen = length(DstStr);
+
+   for (idx = 0; idx < SrcLen; idx++) {
+//print "|"SrcStr[idx:idx+DstLen-1] "|"
+       if (SrcStr[idx:idx+DstLen-1] == DstStr) {
+          return 1
+       }
+   }
+//  print DstStr " not found in " SrcStr
+return 0
+
+}
+
+//***********************************************
+//* Opens source link modules for an object in a different project
+//*
+//* Note: The fullName function is the trick
+//***********************************************
+void open_source_lm_proj (Object o)
+{
+    LinkRef LnkRef
+    for LnkRef in o<-"*" do
+    {
+        read(fullName(source(LnkRef)), false)
+    }
+}
+
+//***********************************************
+//* Opens source link modules for an object in a different project
+//*
+//* Note: The fullName function is the trick
+//***********************************************
+void regexp_open_source_lm_proj (Object o, const Regexp re)
+{
+    ModName_ LnkRef
+    for LnkRef in o<-"*" do
+    {
+        if (re(name(LnkRef)))
+        {
+            read(fullName(LnkRef), false)
+        }
+    }
+}
+
+//***********************************************
+//* Opens source link modules for an object
+//***********************************************
+void open_source_lm (Object o)
+{
+    string link_mod;
+    noError()
+    for link_mod in o<-"*" do {
+        if (!open module link_mod)
+        { 
+            read(link_mod, false);
+        }
+    }
+    lastError()
+}
+
+//******************************************************************************
+// Function: PadStr
+// Purpose:  Pad the return with the specified number of characters
+// Inputs:   Value - Value to pad
+//           lenStr - Total return string length
+// Returns:  PadStr the padded string
+// Sample Use:
+//           strTemp = PadStr(intTotal,6)
+//******************************************************************************
+string PadStr( int Value, int lenStr )
+{ 
+
+   int idx;     //Loop counter
+   int SrcLen;  //Length of Source string
+   int DstLen;  //Length of destination string
+   string strTemp = ""
+   Buffer bTemp = create();
+
+   bTemp = Value strTemp    //Convert the integer to string
+   SrcLen = length (bTemp); //Determine the length of the string
+
+   for (idx = SrcLen; idx < lenStr; idx++)
+   {
+       bTemp += " "
+
+   }
+    
+   strTemp = stringOf(bTemp)
+   delete(bTemp)
+   return strTemp
+}
+
+//******************************************************************************
+// Function: ListTypeOfModules
+// Purpose:  List all modules in a project with a certain prefix
+// Inputs:   None
+// Outputs:  Output text file
+// Returns:  None
+// Sample Use:
+//           ListTypeOfModules()
+//******************************************************************************
+void ListTypeOfModules () {
+
+string ModuleName
+//string szModuleID  = "SW_SRD_";
+string szModuleID  = "SW_SVCP_";
+Stream FileList = write "c:/temp/FileList.txt"
+
+   FileList << "Report of all DOORS Formal modules of a certain type.\n\n"
+   for ModuleName in current Project do {
+       if (match_prefix (ModuleName, szModuleID)){
+          print ModuleName "\n"
+          FileList << ModuleName "\n"
+       }
+   }
+
+   close (FileList)
+
+}
+
+//******************************************************************************
+// Function: ListTypeOfModules
+// Purpose:  List all modules in a project with a certain prefix
+// Inputs:   prefix of modules. 
+// Outputs:  Output text file
+// Returns:  None
+// Sample Use:
+//           ListTypeOfModules()
+//******************************************************************************
+void ListTypeOfModules (string szModuleID) {
+
+string ModuleName
+Stream FileList = write "c:/temp/FileList.txt"
+
+   FileList << "Report of all DOORS Formal modules of a certain type.\n\n"
+   for ModuleName in current Project do {
+       if (match_prefix (ModuleName, szModuleID)){
+          FileList << ModuleName "\n"
+       }
+   }
+
+   close (FileList)
+
+}
+
+//******************************************************************************
+// Function: getPermissions
+// Purpose:  Get the Access permissions for the input access record
+// Inputs:   Access record
+// Returns:  String representing access rights
+// Sample Use:
+//           string strPermission =  getPermissions(Arec)
+//******************************************************************************
+string getPermissions (AccessRec aRec) {
+
+    Buffer b = create
+    if (read aRec) b += 'R'
+    if (modify aRec) b += 'M'
+    if (create aRec) b += 'C'
+    if (delete aRec) b += 'D'
+    if (control aRec) b += 'A'
+    string s = stringOf b
+    if (null s) s = "None"
+    delete b
+    return s
+}
+
+
+//******************************************************************************
+// Function: UsersForModule
+// Purpose:  Dumps all users and their access rights to the display
+// Inputs:   None
+// Returns:  None
+// Output:   List of users on the screen
+// Sample Use:
+//           UsersForModule ()
+//******************************************************************************
+void UsersForModule () {
+   AccessRec Arec
+   string strTemp
+   for Arec in current Module do{
+      string user = username Arec
+       if (null user) {
+         print "default "
+      }else{
+         print user " "
+      }
+      strTemp =  getPermissions(Arec) 
+      print "( "strTemp " )\n"
+   }
+}

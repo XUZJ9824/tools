@@ -1,0 +1,48 @@
+//MakeValueMatchHistory
+/*
+Script to make attribute value match historic value (or most recent baseline value if not changes recorded)
+
+20051005  rngallion   First attempt
+*/
+pragma runLim, 0
+
+const string ATTR = "Project"
+
+History Hist
+HistoryType HistType
+Module CurMod, BaseMod
+Object CurObj, BaseObj
+int AbsNum
+string CurVal, BaseVal, HistVal
+
+CurMod = current Module
+BaseMod = load(CurMod, getMostRecentBaseline CurMod, true)
+
+bool SetHistVal() {
+	bool isSet = false
+	for Hist in CurObj do {
+		HistType = Hist.type
+		if (HistType != modifyObject) continue
+		if (ATTR != Hist.attrName) continue
+		HistVal = Hist.newValue
+		isSet = true
+	}
+	return isSet
+}
+for CurObj in entire CurMod do {
+	if (isDeleted CurObj or table CurObj or row CurObj) continue
+	AbsNum = CurObj."Absolute Number"
+	CurVal = CurObj.ATTR
+	if (SetHistVal) {
+		if (CurVal == HistVal) continue
+		CurObj.ATTR = HistVal
+	} else {
+		BaseObj = object(AbsNum, BaseMod)
+		if (null BaseObj) continue
+		BaseVal = BaseObj.ATTR
+		if (CurVal == BaseVal) continue
+		CurObj.ATTR = BaseVal
+	}
+	print AbsNum ""
+	print "\n"
+}

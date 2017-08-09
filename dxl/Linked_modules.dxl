@@ -1,0 +1,142 @@
+// Linked modules
+//
+// Description: This script lists all modules and theirs baselines that
+//              are linked from current module. The script uses current
+//              filter setting to go only throught objects that needs to 
+//              be exeminated.
+//
+// Revision history:
+// Date         Name       Description
+// -----------  -------    -----------
+// 22-Oct-2013  T.Klir     Initial draft.
+
+
+
+Module currentModule
+Buffer outputText = create
+Skip listedModules = create
+
+currentModule = current
+
+const string TITLE = "Show history"
+const string LINK_MODULE = "*"
+
+string getBaselineString (Baseline b)
+{
+   string baselineString
+ 
+   if(null b)
+   {
+      return "current"
+   }
+
+   baselineString = (major b) "." (minor b) " " (suffix b)
+   return baselineString
+}
+
+void showLinkedModules ()
+{
+   Filter currentFilter, originalFilter
+   Object o
+   bool originalFiltering = false
+   int numberOfObjectsWithOutlink = 0
+
+   originalFilter = current // original filter is stored even if it's not applied
+   
+   
+   if(filtering(current Module))
+   {
+      /* filter is ON, udpate current filter */
+      originalFiltering = true
+      currentFilter = originalFilter
+      currentFilter = currentFilter && hasLinks(linkFilterOutgoing, LINK_MODULE)
+   }
+   else
+   {
+      /* filter is OFF, create a new filter */
+      currentFilter = hasLinks(linkFilterOutgoing, LINK_MODULE)
+   }
+   
+   set currentFilter
+   filtering on
+   
+   outputText = "{Following modules are linked from }{\\b" fullName(current Module) "}\n\n"
+           
+   for o in current Module do 
+   {
+      numberOfObjectsWithOutlink++
+      Link l
+      
+      for l in all o -> LINK_MODULE do 
+      {
+         Baseline         baseline
+         string           modNameString, baselineString
+         ModName_         modName
+         ModuleVersion    modVersion   
+         Module           targetModule
+         bool             result
+         
+         modNameString = target(l)
+         result = put(listedModules, modNameString, "")  // returns false if modNameString already exists
+         
+         /*  list only if this module haven't been listed yet */
+         if(result)
+         {
+            modName = target(l)
+            modVersion = targetVersion(l)
+            targetModule = read(fullName(modName),false)
+            baseline = getMostRecentBaseline(targetModule)
+            baselineString = getBaselineString(baseline)
+            modName = target(l)
+            outputText += modNameString "	" baselineString " \n"
+            targetModule close
+         }
+      }
+   }
+ 
+   outputText += "\n\nNumber of objects with outlink: " numberOfObjectsWithOutlink ""
+ 
+   /* restore original filter setting */
+   current = currentModule
+   if(!originalFiltering)
+   {
+      filtering off
+   } 
+   
+   /* the originalFilter can be null if no filter has been set prior running this script (it's not the same like when the filter is off) */
+   if(!null originalFilter)
+   {
+      set originalFilter
+   }
+
+   
+   /* Show the results */
+   DB bcDB = create "Linked modules"
+
+   // The DBE element which will store the comparison result in the rich text format
+   DBE textDBE = richText(bcDB,"","initial",500,300,true)
+
+   realize bcDB
+   
+   set(textDBE, outputText)
+   delete outputText
+   delete listedModules
+   show bcDB
+ 
+   originalFilter = null
+   currentFilter = null
+   o = null   
+}
+
+/* Start of the script */
+
+if (null currentModule) then
+{
+   errorBox "This script must be run from a module!"
+   halt
+}
+
+if (confirm("Warning: This script uses current filter setting. Press Confirm to continue or Cancel to stop the script.", msgWarning))
+{
+   showLinkedModules()
+}

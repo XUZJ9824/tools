@@ -1,0 +1,65 @@
+Stream file = write "c:/temp/EPIC Block 1.35 SRS.txt"
+Module m
+Object o
+Column c
+string modName
+string txt
+
+file << "Report of all DOORS Formal SRS modules in current project that contain references to code files.\n\n"
+
+noError
+ 
+for modName in current Project do 
+{
+	if ((type module modName == "Formal") && (modName[0:7]=="SYS_SRS_"))
+	{
+		m = read(modName)
+		Status = lastError
+
+		if (null Status)
+		{
+			print "opening " modName "\n"
+			file << modName "\n"
+
+			if (!(null current Module))
+			{
+				for o in current Module do
+				{
+					for c in current Module do 
+					{
+						if (main c) 
+						{
+							txt = o."SW Release"
+							if (matches ("(EPIC Block 1.35)", txt))	 
+							{
+								int v1 = start 0
+								int v2 = length txt
+								//print "   " txt[v1:v2] "\n"
+								file << "   " identifier (o) "  " txt[v1:v2] "\n"
+							} // if match
+						} // if main
+					} // for column
+				} // for object
+				close m
+			}
+			else
+			{
+				print "*** null module " modName "\n"
+			}
+		}
+		else
+		{
+			print "*** unable to open " modName "\n"
+			file << "***ERROR*** Unable to open " modName "\n"
+		} // if null status
+
+	} // end if type module
+
+}  // end for modName
+
+print "end of dxl script\n\n"
+print "See file C:\\Temp\\epic_block_1_35_SRS.txt for the report output.\n"
+print "You can search this file for occurrences of a .c filename to determine which SRS's reference it.\n"
+file << "\nend of report." "\n"
+
+close (file)

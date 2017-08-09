@@ -1,0 +1,173 @@
+DB dbMain = create "SRD -> STC Trace Report Generator";
+DBE stcMultiList, stcChoiceList, srdChoiceList;
+string StcModuleName[] = {
+    "STC_HMI_ATC_LOG",
+    "STC_HMI_ATC_NOTIFY",
+    "STC_HMI_ATC_REPORT",
+    "STC_HMI_ATC_REQUEST",
+    "STC_HMI_ATC_SIDELINK",
+    "STC_HMI_ATC_VALIDATION",
+    "STC_HMI_ATC_DOWNLINK",
+    "STC_HMI_ATC_UPLINK",
+    "STC_HMI_ATC_MAIN"}
+string SrdModuleName[] = {
+    "SRD_CPDLC HMI"}
+//    "",
+//    "",
+//    ""}
+
+Regexp regStc = regexp "^(SYS_STC_HMI_ATC)";
+Regexp regPrj = regexp "(EPIC ATN)";
+
+string btns[] = {"Ok"};
+string finish[] = {"Done"};
+
+string stcPath = "/CMU-CMF Requirements and Test/EPIC ATC/";
+string srdPath = "/Mark II/Common/SRD/";
+string csvFileName = "";
+
+srdChoiceList = choice(dbMain, "SRD Module", SrdModuleName, 1, 1, 30, false);
+//stcChoiceList = choice(dbMain, "STC Module", StcModuleName, 6, -1, 30, false);
+
+
+Module mSRD = null, mSTC = null, mLnk = null;
+Module m1 = null, m2 = null, m3 = null, m4 = null, m5 = null, m6 = null, m7 = null, m8 = null, m9 = null;
+string m1P, m2P, m3P, m4P, m5P, m6P;
+Object objSRD = null, objSTC = null;
+string srdID = "", stcID = "";
+Link lnk = null;
+Stream csvFile = null;
+string reqAttr = "";
+string stcModName = "";
+string srd = "", stc = "";
+
+bool stcRqmnt = false;
+
+
+void GenerateReport(DB db)
+{
+    srd = get(srdChoiceList);
+    //stc = get(stcChoiceList);
+    if(null srd)
+    {
+        messageBox("Please select a SRD module", btns, msgInfo);
+        halt();
+    }
+    if(null stc)
+    {
+        m1 = read(stcPath StcModuleName[0], false);
+        m2 = read(stcPath StcModuleName[1], false);
+        m3 = read(stcPath StcModuleName[2], false);
+        m4 = read(stcPath StcModuleName[3], false);
+        m5 = read(stcPath StcModuleName[4], false);
+        m6 = read(stcPath StcModuleName[5], false);
+        m7 = read(stcPath StcModuleName[6], false);
+        m8 = read(stcPath StcModuleName[7], false);
+        m9 = read(stcPath StcModuleName[8], false);
+    }
+    else
+    {
+        mSTC = read(stcPath stc, false);
+    }
+    mSRD = read(srdPath srd, false);
+    csvFileName = "D:\\" upper(srd) ".CSV";
+    csvFile = write csvFileName;
+    csvFile << "SRD Module Name" ",";
+    csvFile << "Requirement" ",";
+    csvFile << "Test Case Module Name" ",";
+    csvFile << "Verify Statement" ",";
+    csvFile << "Link Module Name" "\n";
+
+    for objSRD in mSRD do
+    {
+        srdID = "";
+        stcID = "";
+        stcModName = "";
+        lnk = null;
+        stcRqmnt = false;
+        reqAttr = objSRD."REQ Analysis";
+        if(reqAttr != "HI Level Req") then continue;
+        reqAttr = objSRD."Project";
+        if(!(regPrj reqAttr)) then continue;
+        srdID = identifier objSRD;
+        for lnk in objSRD <- "*" do
+        {
+            objSTC = source lnk;
+            stcID = identifier objSTC;
+            mLnk = module(lnk);
+            stcModName = source lnk;
+            if(regStc stcModName)
+            {
+                csvFile << srd ",";
+                csvFile << srdID ",";
+                csvFile << stcModName ",";
+                csvFile << stcID ",";
+                csvFile << name mLnk "\n";
+                stcRqmnt = true;
+                stcID = "";
+            }
+        }
+        if(!stcRqmnt)
+        {
+            csvFile << srd ",";
+            csvFile << srdID ",";
+            csvFile << "" ",";
+            csvFile << "" ",";
+            csvFile << "" "\n";
+        }
+    }
+    messageBox("Report Saved to:\n" csvFileName, finish, msgInfo);
+
+    //close(mSRD, false);
+    if(csvFile != null)
+    {
+        close(csvFile);
+    }
+    if(mSTC != null)
+    {
+        close(mSTC, false);
+    }
+    if(m1 != null)
+    {
+        close(m1, false);
+    }
+    if(m2 != null)
+    {
+        close(m2, false);
+    }
+    if(m3 != null)
+    {
+        close(m3, false);
+    }
+    if(m4 != null)
+    {
+        close(m4, false);
+    }
+    if(m5 != null)
+    {
+        close(m5, false);
+    }
+    if(m6 != null)
+    {
+        close(m6, false);
+    }
+    if(m7 != null)
+    {
+        close(m7, false);
+    }
+    if(m8 != null)
+    {
+        close(m8, false);
+    }
+    if(m9 != null)
+    {
+        close(m9, false);
+    }
+
+}
+
+
+apply(dbMain, "Generate Report", GenerateReport);
+//realize(dbMain);
+show dbMain;
+destroy(dbMain);

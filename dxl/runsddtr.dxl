@@ -1,0 +1,6 @@
+// User Function
+/*
+ Checks trace links between SDD and SRD documents
+*/
+
+#include "k:\\dxl\\SDDtrace.dxl"

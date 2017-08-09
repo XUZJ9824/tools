@@ -1,0 +1,472 @@
+/* =============================================================================
+ *   STC ATTRIBUTES CHECK   
+ *
+ *   STC Attributes Check use for self review and review of others work.
+ *   It checks various error combinations of attributes.
+ *
+ *   CHECKED ATTRIBUTES: Project, SW Release, Test Case Type,
+ *                       Verification Method, SCR, EPIC Criticality.
+ *   
+ *   
+ *   Copyright © March 2015 Honeywell, Tomas Valko
+ *
+ *   REVISION HISTORY:
+ *   Date         Name       Description
+ *   -----------  -------    -----------
+ *   09-OCT-2013  T.Valko    Initial development
+ *   09-APR-2014  T.Valko    Fixed filtering for SW Release
+ *   30-MAR-2015  T.Valko    Changed logic how SW Release filter is defined
+ *
+ ******************************************************************************/
+
+/* =============================================================================
+ * GLOBAL FLAGS
+ *
+ ******************************************************************************/
+
+/* Modify SILENT_MODE flag to turn on/off pop-up windows */
+
+const bool SILENT_MODE = true
+
+/* =============================================================================
+ * DON'T MODIFY SCRIPT UNDER, UNLESS YOU WANT TO CHANGE BEHAVIOR
+ *
+ ******************************************************************************/
+
+/* Create output buffer and define ouput colors */
+Buffer output = create
+output += "{\\colortbl;"
+output += "\\red0\\green0\\blue0;"        /* 1 - black */
+output += "\\red255\\green0\\blue0;"      /* 2 - red   */
+output += "\\red0\\green0\\blue255;"      /* 3 - blue  */
+output += "\\red150\\green150\\blue150;}" /* 4 - gray  */
+
+/* Global flag, if any error was found */
+bool NO_PROBLEM_FOUND = true
+
+/* =============================================================================
+ * LOCAL FUNCTIONS:
+ *    set_EPIC_global_project
+ *    count_objects_in_view
+ *    list_objects_IDs_in_view
+ *    show
+ *    show_empty
+ *    check_object_level
+ *
+ ******************************************************************************/
+
+/* Compose Filter for EPIC Only PROJECT attribute */
+Filter set_EPIC_global_project() {
+   Filter Project_ATN = contains(attribute "Project", "EPIC ATN", false)
+   Filter Project_AOA = contains(attribute "Project", "EPIC AOA", false)
+   Filter Project_POA = contains(attribute "Project", "EPIC POA", false)
+   
+   Filter Project_EPIC = (Project_POA || Project_AOA || Project_ATN)
+   
+   return Project_EPIC
+}
+
+/* Function to count filtered objects */
+int count_objects_in_view() {
+    int count = 0
+    
+    Object o
+    for o in (current Module) do count++
+    
+    return count
+}
+
+/* Add message to the output log */
+void list_objects_IDs_in_view(string title) {
+    Object o
+    int count = 0
+    bool first = true
+    
+    output += "{" title "}: "
+    for o in (current Module) do {
+        if (first) {
+            output += "{\\cf2 " o."Absolute Number" "}"
+            first = false
+        }
+        else {
+            output += ", {\\cf2 " o."Absolute Number" "}"
+        }
+        count++
+    }
+    
+    /* if there is no object ID to print,
+       print at least 0 */
+    if (count == 0) output += "{\\cf3 0}"
+    
+    output += "{\n}"
+}
+
+/*
+    "show" sets the passed filter, refreshes
+    the screen and waits for the next filter.
+    It modifies input filter with GLOBAL PROJECT filter
+*/
+void show(Filter f, string msg) {
+   
+   Filter Project_f = set_EPIC_global_project()
+   
+   Filter final_filter = Project_f && f
+   set final_filter
+   refresh current
+   
+   list_objects_IDs_in_view(msg)
+    
+   int count = count_objects_in_view()
+
+   if (count > 0) NO_PROBLEM_FOUND = false
+
+   if (!SILENT_MODE) {
+      msg = msg "\n\nNumber of Errors: " count "\n\nReady for next filter?"
+
+      /* use different box for info and error messages */
+      if (count == 0) infoBox msg
+      else ack msg
+   }
+}
+
+/*
+    "show_empty" sets the passed filter, refreshes
+    the screen and waits for the next filter.
+    No modification to input filter.
+*/
+void show_empty(Filter f, string msg) {
+   
+   Filter Project_f = set_EPIC_global_project()
+   
+   Filter final_filter = Project_f && f
+   set final_filter
+   refresh current
+   
+   list_objects_IDs_in_view(msg)
+    
+   int count = count_objects_in_view()
+
+   if (count > 0) NO_PROBLEM_FOUND = false
+
+   if (!SILENT_MODE) {
+      msg = msg "\n\nNumber of Errors: " count "\n\nReady for next filter?"
+
+      /* use different box for info and error messages */
+      if (count == 0) infoBox msg
+      else ack msg
+   }
+}
+
+/*  
+    checks if current object has same level as previous one
+    checks that current obj is one level down after Heading object
+*/
+void check_object_level() {
+    
+    Object o_cur, o_prev
+    bool first = true
+    bool compare = false
+    string heading
+    
+    output += "{Object Level Error}: "
+    
+    for o_cur in (current Module) do {
+        if (compare) {
+            heading = o_prev."Object Heading"
+            // if current object is level down
+            if (level(o_cur) > level(o_prev)){
+                // and previous object has empty Heading
+                if (length(heading) == 0){
+                    // and current and previous objects does not contain OLE
+                    if (!containsOle(o_cur."Object Text") && !containsOle(o_prev."Object Text")){ 
+                        // Error in Object Level Attribute
+                        if (first) {
+                            output += "{\\cf2 " o_cur."Absolute Number" "}"
+                            first = false
+                        }
+                        else {
+                            output += ", {\\cf2 " o_cur."Absolute Number" "}"
+                        }
+                        NO_PROBLEM_FOUND = false
+                    }
+                }
+            }
+            // if previous object has Heading
+            else if (length(heading) > 0){
+                // and current object has empty Heading
+                heading = o_cur."Object Heading"
+                if (length(heading) == 0){
+                    // and current object is not 1 level down
+                    if (level(o_cur) - level(o_prev) != 1){
+                        // Error in Object Level Attribute
+                        if (first) {
+                            output += "{\\cf2 " o_cur."Absolute Number" "}"
+                            first = false
+                        }
+                        else {
+                            output += ", {\\cf2 " o_cur."Absolute Number" "}"
+                        }
+                        NO_PROBLEM_FOUND = false
+                    }
+                }
+            }
+        }
+        o_prev = o_cur
+        compare = true
+    }
+    
+    if (first) output += "{\\cf3 0}"
+}
+
+/* =============================================================================
+ * FILTER DEFINITIONS
+ *
+ ******************************************************************************/
+
+filtering on
+
+/* Find which attributes are present in current Module */
+Module m = current Module
+AttrDef find_epic_criticality = find (m, "EPIC Criticality")
+AttrDef find_test_case_type = find (m, "Test Case Type")
+AttrDef find_verification_method = find (m, "Verification Method")
+AttrDef find_scr = find (m, "SCR")
+AttrDef find_action = find (m, "Action")
+
+/* Filter definition */
+Filter Project_Empty = isNull(attribute "Project")
+Filter SW_Release_Empty = isNull(attribute "SW Release")
+Filter TestCase_Type_Empty
+if (!null find_test_case_type){
+   TestCase_Type_Empty = isNull(attribute "Test Case Type")
+}
+Filter Verif_Method_Empty
+if (!null find_verification_method){
+   Verif_Method_Empty = isNull(attribute "Verification Method")
+}
+Filter SCR_Empty
+if (!null find_scr){
+   SCR_Empty = isNull(attribute "SCR")
+}
+Filter Crit_Empty
+if (!null find_epic_criticality){
+   Crit_Empty = isNull(attribute "Epic Criticality")
+}
+
+Filter Criticality
+if (!null find_epic_criticality){
+   Criticality = contains(attribute "EPIC Criticality", "C", false) || 
+                 contains(attribute "EPIC Criticality", "D", false)
+}
+
+Filter Project_ATN = contains(attribute "Project", "EPIC ATN", false)
+Filter Project_AOA = contains(attribute "Project", "EPIC AOA", false)
+Filter Project_POA = contains(attribute "Project", "EPIC POA", false)
+Filter Project_EPIC = set_EPIC_global_project()
+
+/* Determine available SW Releases in module */
+AttrDef  ad = find(current Module,"SW Release")
+AttrType at = ad.type
+Skip     sk_old = createString()
+Skip     sk_aoa = createString()
+Skip     sk_atn = createString()
+int      i = 0
+string   Enum
+int      offset = null
+int      len = null
+
+for (i = 0; i < at.size; i++)
+{
+   if (findPlainText (at.strings[i], "EPIC Block 0.", offset, len, false, false))
+   {
+      put(sk_old,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 1.", offset, len, false, false))
+   {
+      put(sk_aoa,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 2.", offset, len, false, false))
+   {
+      put(sk_atn,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 3.", offset, len, false, false))
+   {
+      put(sk_atn,at.strings[i],at.strings[i])
+   } 
+}
+
+Filter SW_Release_Epic_Base = contains(attribute "SW Release", "Epic Baseline", false)
+Filter SW_Release_Epic_Common = SW_Release_Epic_Base
+Filter f_temp
+for Enum in sk_old do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+   
+   SW_Release_Epic_Common = SW_Release_Epic_Common || f_temp
+}
+
+Filter SW_Release_AOA = SW_Release_Epic_Common
+for Enum in sk_aoa do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+
+   SW_Release_AOA = SW_Release_AOA || f_temp
+}
+
+Filter SW_Release_ATN = SW_Release_Epic_Common
+for Enum in sk_atn do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+
+   SW_Release_ATN = SW_Release_ATN || f_temp
+}
+
+Filter SW_Release_EPIC = (SW_Release_AOA || SW_Release_ATN)
+/* End of SW Releases filters */
+
+Filter Is_Test_Case = contains(attribute "Object Heading", "Test Case ", true)
+
+Filter Is_Test_Type_SROT
+if (!null find_test_case_type){
+   Is_Test_Type_SROT = contains(attribute "Test Case Type", "SROT", false)
+}
+Filter Is_Ver_Method_Ver
+if (!null find_verification_method){
+   Is_Ver_Method_Ver = contains(attribute "Verification Method", "Verification", false)
+}
+
+/* SCR Format */
+Filter Has_SCR_Dim_Prefix
+if (!null find_scr){
+   Has_SCR_Dim_Prefix = contains(attribute "SCR", "Dimensions_CMU_CR_", true)
+}
+
+/* Linking */
+Filter Is_Verify
+if (!null find_action){
+   Is_Verify = contains(attribute "Action", "VERIFY", false)
+}
+
+Filter Contains_Observe_Keyword = contains(attribute "Object Text", "Observe", false)
+
+Filter Has_No_Outgoing_Links = hasNoLinks(linkFilterOutgoing, "*")
+Filter Has_Outgoing_Links = hasLinks(linkFilterOutgoing, "*")
+
+/* =============================================================================
+ * FILTER USAGE
+ *
+ ******************************************************************************/
+
+/* Add header to the output log */
+output += "{\\b " name (current Module) "} "
+output += "{Baseline \\b " version (current Module) "}\n\n"
+
+/* Empty values */
+output += "{\\b EMPTY attributes\n}"
+show_empty(Project_Empty, "\t Project")
+show_empty(SW_Release_Empty, "\t SW Release")
+if (!null find_test_case_type)
+   show_empty(Is_Test_Case && TestCase_Type_Empty, "\t Test Case Type")
+else
+   output += "{\\cf4 \t Test Case Type: NA\n}"
+if (!null find_verification_method)
+   show_empty(Is_Test_Case && Verif_Method_Empty, "\t Verification Method")
+else
+   output += "{\\cf4 \t Verification Method: NA\n}"
+if (!null find_scr)
+   show_empty(SCR_Empty, "\t SCR")
+else
+   output += "{\\cf4 \t SCR: NA\n}"
+if (!null find_epic_criticality)
+   show(Project_EPIC && Crit_Empty, "\t EPIC Criticality")
+else
+   output += "{\\cf4 \t EPIC Criticality: NA}\n"
+output += "{\n}"
+
+/* Project & SW Release */
+show(Project_EPIC && !SW_Release_EPIC, "Project is EPIC (POA, AOA or ATN) but SW Release has no EPIC build")
+show(Project_ATN && (!Project_AOA) && (!Project_POA) && (!SW_Release_ATN), "Project is ATN only but SW Release has no ATN build")
+show(Project_AOA && (!Project_ATN) && (!Project_POA) && (!SW_Release_AOA), "Project is AOA only but SW Release has no AOA build")
+output += "{\n}"
+
+/* SCR Format */
+if (!null find_scr)
+   show( !Has_SCR_Dim_Prefix, "SCR without Dimensions_CMU_CR_ prefix")
+else
+   output += "{\\cf4 SCR without Dimensions_CMU_CR_ prefix: NA}"
+
+output += "{\n}"
+
+/* Criticality */
+if (!null find_epic_criticality)
+   show(Project_EPIC && !Criticality, "EPIC Criticality is not C or D")
+else
+   output += "{\\cf4 EPIC Criticality is not C or D: NA}"
+output += "{\n}"
+
+/* Test Cases */
+if (!null find_test_case_type)
+   show(Is_Test_Case && !Is_Test_Type_SROT, "In Test Case not set SROT as Test Type")
+else
+   output += "{\\cf4 In Test Case not set SROT as Test Type: NA\n}"
+
+if (!null find_verification_method)
+   show(Is_Test_Case && !Is_Ver_Method_Ver, "In Test Case not set Verification as Method")
+else
+   output += "{\\cf4 In Test Case not set Verification as Method: NA}"
+
+output += "{\n}"
+
+if (!null find_test_case_type)
+   show(!Is_Test_Case && !TestCase_Type_Empty, "Not Test Case but Test Type set")
+
+if (!null find_verification_method)
+   show(!Is_Test_Case && Is_Ver_Method_Ver, "Not Test Case but Verification Method set")
+output += "{\n}"
+
+/* Linking */
+if (!null find_action){
+   show(Is_Verify && Has_No_Outgoing_Links, "Object is VERIFY but has no outgoing links")
+   show(!Is_Verify && Has_Outgoing_Links, "Object is not VERIFY but has outgoing links")
+}
+else{
+   show(Contains_Observe_Keyword && Has_No_Outgoing_Links, "Object contains Observe but has no outgoing links")
+   show(!Contains_Observe_Keyword && Has_Outgoing_Links, "Object does not contain Observe but has outgoing links")
+}
+output += "{\n}"
+
+filtering off
+
+/* Object Level Attribute */
+check_object_level ()
+output += "{\n\n}"
+
+/* =============================================================================
+ * END OF FILTER USAGE
+ *
+ ******************************************************************************/
+
+/* Pop up result window */
+if (NO_PROBLEM_FOUND == true){
+    infoBox "NO PROBLEMS IN ATTRIBUTES."
+}
+else{
+    ack "ERRORS IN ATTRIBUTES!!!"
+}
+
+/* =============================================================================
+ * OUTPUT WINDOW
+ *
+ ******************************************************************************/
+DB bcDB = create "STC Check Attributes Results"
+   
+/* The DBE element which will store the check result in the rich text format */
+DBE redliningDBE = richText(bcDB, "", "initial", 570, 600, true)
+realize bcDB  
+useRTFColour(redliningDBE, true) // The usage of the perm allows redlining feature
+set(redliningDBE, output)
+delete output
+show bcDB
+
+/* =============================================================================
+ * END OF DXL SCRIPT
+ *
+ ******************************************************************************/
+ 

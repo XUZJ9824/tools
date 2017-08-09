@@ -1,0 +1,281 @@
+Project p = current;
+Module m = current;
+
+string oHeading = "Object Heading";
+string oText = "Object Text";
+string oAction = "Action";
+string oTCRevision = "TestCase Revision";
+string oVerMethod = "Verification Method";
+string oTCType = "Test Case Type";
+
+//DB dbAction = create("Adding Default Attributes");
+//int progressBarSteps= 0;
+
+bool comfirmAttribute()
+{
+	AttrDef ad;
+	
+	if((ad=find(m, "Object Heading"))!=null)
+	{
+		oHeading= "Object Heading";
+	}
+	else
+	{
+		ack "There is not a Attribute about Object Heading in Module:" name(m) "\n"
+		return false;
+	}
+
+	if((ad=find(m, "Object Text"))!=null)
+	{
+		oText= "Object Text";
+	}
+	else
+	{
+		ack "There is not a Attribute about Object Text in Module:" name(m) "\n"
+		return false;
+	}
+
+	if((ad=find(m, "Action"))!=null)
+	{
+		oAction= "Action";
+	}
+	else
+	{
+		ack "There is not a Attribute about Action in Module:" name(m) "\n"
+		return false;
+	}
+
+	if((ad=find(m, "TestCase Revision"))!=null)
+	{
+		oTCRevision= "TestCase Revision";
+	}
+	else
+	{
+		ack "There is not a Attribute about TestCase Revision in Module:" name(m) "\n"
+		return false;
+	}	
+
+	if((ad=find(m, "Verification Method"))!=null)
+	{
+		oVerMethod= "Verification Method";
+	}
+	else
+	{
+		ack "There is not a Attribute about Verification Method in Module:" name(m) "\n"
+		return false;
+	}
+
+	if((ad=find(m, "Test Case Type"))!=null)
+	{
+		oTCType= "Test Case Type";
+	}
+	else
+	{
+		ack "There is not a Attribute about Test Case Type in Module:" name(m) "\n"
+		return false;
+	}
+
+	return true;
+}
+
+void AddDefaultAttribe()
+{
+	
+
+	string buttons[] = {"Continue"} 
+	string message = "Make sure that you have added the following attributes to " name(m) ": Object Heading, Object Text, Action, TestCase Revision, Verification Method, Test Case Type";
+
+	//ack message "\n";
+	messageBox(message, buttons, msgInfo);
+
+	if(!comfirmAttribute())
+	{
+		return;
+	}
+
+
+	
+	//Regexp verdict = regexp "^(All the VERIFY statements)";
+	
+	Regexp objectNoTitle = regexp "^(5\\.[0-9]+)$";
+
+	//Regexp objectNoDescription = regexp "^(5\\.[0-9]+\\.[0-9]+)";
+	Regexp objectNoDescription = regexp "^(5\\.[0-9]+\\.[0-9]+)";
+	
+	Regexp objectHeadingTitle = regexp "([tT]est [cC]ase)";
+
+	Regexp objectVerify = regexp "^(Verify|Observe)";
+
+	Regexp objectConfirm = regexp "^([Cc]onfirm)";
+
+	//Regexp objectSelect = regexp "^(*[Pp]ress*|press*$)";
+	
+	Regexp objectSelect = regexp "([a-zA-Z0-9]*[Pp]ress)";
+
+	Regexp objectWait = regexp "([a-zA-Z0-9]*[Ww]ait)";
+	
+	Object o;
+
+	int testCount1 = 0;
+	int testCount2 = 0;
+	int testCount3 = 0;
+
+	int stepCount = 0;
+	//If the next content is belonged to the Test Case Steps, it'll be true.
+	bool bOpen = false;
+	//If the current object HEADING is not "Test Case Steps", it'll be false.
+	bool bIsTestSteps = false;
+	bool bIsFritsOne = true;
+	bool bIsNeedAddRevision = false;
+	bool bIsSLTSetOver = false;
+
+	string strDes;
+	string strCont;
+	string strObjectNo;
+	string strAction;
+	string strSLT;
+	string strVer;
+
+	//progressStart(dbAction, "Perfoming", "", progressBarSteps);
+
+	for o in m do
+	{
+		//progressStep ++step;
+
+		strDes = o.oHeading;
+		strCont = o.oText;
+		strObjectNo = number(o);
+		strSLT = o.oTCType;
+		strVer = o.oVerMethod;
+
+		if((objectNoTitle strObjectNo) && strSLT == "SLT")
+		{
+			//testCount3++;
+			//print(strObjectNo strDes "\n");
+			//print (strVer"\n");
+			if( strVer != "Inspection")
+			{
+				o.oVerMethod = "Verification";
+			}
+			continue;
+		}
+
+		  if(bIsNeedAddRevision)
+		  {
+			o.oTCRevision = 1;
+			bIsNeedAddRevision = false;
+		  }
+		  
+		  //If the object number is the type x.x and the SLT is not set, then setting the current object Test Case Type as "SLT".
+		  //if(((objectNoTitle strObjectNo) || objectHeadingTitle strDes) && !bIsSLTSetOver)
+		  if((objectNoTitle strObjectNo) && !bIsSLTSetOver)
+		  {
+			//testCount2++;
+			//print ("TestCaseType:")
+		  	//print (testCount2);
+		  	o.oTCType = "SLT";
+			print (strVer"\n");
+			if( strVer != "Inspection")
+			{
+				o.oVerMethod = "Verification";
+			}
+		  	bIsSLTSetOver = true;
+		  	
+			continue;
+		  }
+
+		  if(matches("Description", strDes) && (objectNoDescription strObjectNo) )
+		  {
+			//testCount1++;
+			//print ("TestCaseRevision:")
+		  	//print (testCount1);
+			bIsNeedAddRevision = true;
+			continue;
+		  }
+		  
+		  if(!bOpen && !matches("Test Steps", strDes))
+		  {
+			//print ("?")
+		  	continue;
+		  }
+
+		  if(!bOpen && matches("Test Steps", strDes))
+		  {
+			bOpen = true;
+			bIsTestSteps = true;
+			//print (strDes "\n");
+		  }
+		  //
+		  if(bOpen)
+		  {
+		  	if(!matches("Test Steps", strDes)) bIsTestSteps = false;
+		  	if(matches("Test Data", strDes))
+		  	{
+				bOpen = false;
+				bIsFritsOne = true;
+				bIsSLTSetOver = false;
+				continue;
+		  	}
+		  }
+
+		  if(!bIsTestSteps) 
+		  {
+			strAction = o.oAction;
+			
+			//if(strAction=="VERIFY" ||strAction=="ENSURE" ||strAction=="START" ||strAction=="VERDICT" ||strAction == "DO")
+			if(strAction=="VERIFY" || strAction=="ENSURE" || strAction=="START" || strAction=="SELECT" || strAction=="WAIT" || strAction=="ENTER" || strAction=="SEND MESSAGE" || strAction=="SEND RESPONSE" )
+			{
+				bIsFritsOne = false;
+				continue;
+			}
+		  	if(bIsFritsOne)
+		  	{	  	
+		  		o.oAction = "START";
+		  		bIsFritsOne = false;
+		  	}
+		  	else
+		  	{
+		  		//if(verdict strCont)
+		  		//{
+					//print("End");
+		  			//o.oAction = "VERDICT";
+		  		//}
+				if(objectSelect strCont)
+		  		{
+					//print("S");
+		  			o.oAction = "SELECT";
+		  		}
+				else if(objectWait strCont)
+		  		{
+					//print("W");
+		  			o.oAction = "WAIT";
+		  		}
+		  		else if(objectVerify strCont)
+		  		{
+					//print("V");
+		  			o.oAction = "VERIFY";
+		  		}
+		  		else if(objectConfirm strCont)
+		  		{
+					//print("E");
+		  			o.oAction = "ENSURE";
+		  		}
+		  		//else if(strCont == "")
+		  		//{
+				//	//print("I");
+		  		//	o.oAction = "INSPECTION";	  			
+		  		//}
+		  		else
+		  		{
+					//print("D");
+		  			o.oAction = "DO";
+		  		}
+		  	}
+		  }
+		}
+		//print("\n""Total Changed Reqmt Number is ");
+		//print(testCount3);
+		//progressStop();
+}
+
+AddDefaultAttribe();

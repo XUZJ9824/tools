@@ -1,0 +1,98 @@
+﻿DB dbMain = create "SRD -> STC Trace Report Generator";
+DBE stcMultiList, stcChoiceList, srdChoiceList;
+string StcModuleName[] = {
+    "SYS_STC_HMI_ATC_LOG",
+    "SYS_STC_HMI_ATC_NOTIFY",
+    "SYS_STC_HMI_ATC_REPORT",
+    "SYS_STC_HMI_ATC_REQUEST",
+    "SYS_STC_HMI_ATC_SIDELINK",
+    "SYS_STC_HMI_ATC_VALIDATION"}
+    //""}
+string SrdModuleName[] = {
+    "SRD_CPDLC HMI"}
+//    "",
+//    "",
+//    ""}
+
+string btns[] = {"Ok"};
+string finish[] = {"Done"};
+
+string stcPath = "/CMU-CMF Requirements and Test/EPIC ATC/";
+string srdPath = "/Mark II/Common/SRD/";
+string csvFileName = "";
+
+//stcMultiList= multiList(dbMain, "STC Module List",30, 6, StcModuleName);
+srdChoiceList = choice(dbMain, "SRD Module", SrdModuleName, 1, -1, 30, false);
+stcChoiceList = choice(dbMain, "STC Module", StcModuleName, 6, -1, 30, false);
+
+
+Module mSRD = null, mSTC = null, mLnk = null;
+Object objSRD = null, objSTC = null;
+string srdID = "", stcID = "";
+Link lnk = null;
+Stream csvFile = null;
+string reqAttr = "";
+
+void GenerateReport(DB db)
+{
+    string srd = get(srdChoiceList);
+    string stc = get(stcChoiceList);
+    if(null srd)
+    {
+        messageBox("Please select a SRD module", btns, msgInfo);
+        halt();
+    }
+    if(null stc)
+    {
+        messageBox("Please select a STC module", btns, msgInfo);
+        halt();
+    }
+    mSRD = read(srdPath srd, false);
+    mSTC = read(stcPath stc, false);
+    csvFileName = "D:\\" upper(srd) ".CSV";
+    csvFile = write csvFileName;
+    csvFile << "SRD Module Name" ",";
+    csvFile << "Requirement" ",";
+    csvFile << "Test Case Module Name" ",";
+//    csvFile << "Test Case" ",";
+    csvFile << "Verify Statement" ",";
+    csvFile << "Link Module Name" "\n";
+
+    for objSRD in mSRD do
+    {
+        reqAttr = objSRD."REQ Analysis";
+        if(reqAttr != "HI Level Req") then continue;
+        for lnk in objSRD <- "*" do
+        {
+            //if(null lnk) then continue;
+            objSTC = source lnk;
+            srdID = identifier objSRD;
+            stcID = identifier objSTC;
+            mLnk = module(lnk);
+            if(name mSTC != stc)
+            {
+                continue;
+            }
+            else
+            {
+                csvFile << srd ",";
+                csvFile << srdID ",";
+                csvFile << stc ",";
+                csvFile << stcID ",";
+                csvFile << name mLnk "\n";
+            }
+            
+        }
+    }
+    messageBox("Report Saved to:\n" csvFileName, finish, msgInfo);
+
+    close(mSRD, false);
+    close(mSTC, false);
+    close(csvFile);
+    destroy(dbMain);
+}
+
+
+apply(dbMain, "Generate Report", GenerateReport);
+//realize(dbMain);
+show dbMain;

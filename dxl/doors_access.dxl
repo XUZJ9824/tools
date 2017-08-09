@@ -1,0 +1,107 @@
+pragma runLim,0
+
+//******************************************************************************
+// Function: getPermissions
+// Purpose:  Get the Access permissions for the input access record
+// Inputs:   Access record
+// Returns:  String representing access rights
+// Sample Use:
+//           string strPermission =  getPermissions(Arec)
+//******************************************************************************
+string getPermissions (AccessRec aRec) {
+
+   Buffer b = create
+      if (read aRec) b += 'R'
+         if (modify aRec) b += 'M'
+            if (create aRec) b += 'C'
+               if (delete aRec) b += 'D'
+                  if (control aRec) b += 'A'
+                     string s = stringOf b
+                        if (null s) s = "None"
+                           delete b
+                              return s
+}
+
+
+string dirname="C:\\doors_report\\"   //** ESCAPE slashes
+
+if(!fileExists_(dirname"."))
+{
+      mkdir(dirname)
+}
+
+Array accessDb = create(10000,4)    //should be big enough, 3=user, project, filename
+int index = 0
+
+Project p
+for p in database do {
+
+   //exlcude DATACOM project (it just contains other projects and DOORS Training folder does not need to be parsed
+   if (fullName(p) == "/DATACOM" || fullName(p) == "/DOORS Training " || fullName(p) == "/VIA Custom") continue
+   Stream Output = write(dirname fullName(p) ".txt", CP_UTF8 )
+
+   /* Output << fullName(p) */
+   /* Output << '\n' */
+
+   Item i
+   for i in p do {
+      AccessRec Arec
+      string accessResult
+
+      //Exclude everything except formal modules (mainly Link modules)
+      if((type (i)) != "Formal"){
+         continue
+      }
+
+      for Arec in i do {
+         accessResult = getPermissions(Arec)
+         if (accessResult == "RMCD"){
+            string user = username Arec
+            if ((user != "BARS/BRNO") && (user != "HTSL (Beijing and India)") &&
+               (user != "Honeywell-US") && (user != "PerfSw")) {
+               Output << user "," fullName(p) fullName(i)
+               if (user != null){
+                  put(accessDb, user, index, 0)
+               } else {
+                  put(accessDb, "N/A", index, 0)
+               }
+
+               if (fullName(p) != null){
+                  put(accessDb, fullName(p), index, 1)
+               } else put(accessDb, "N/A", index, 1)
+
+               if (fullName(i) != null){
+                  put(accessDb, fullName(i), index, 2)
+               } else put(accessDb, "N/A", index, 2)
+
+               /* put(accessDb, fullName(p), index, 1) */
+               /* put(accessDb,fullName(i), index, 2) */
+               index++
+               Output << '\n'
+            }
+
+         }
+      }
+   }
+   Output << '\n'
+}
+
+//Uncommnet if verbose bahavior is needed - it opens DOORS report window which could be annoying
+//print "Num of entries: " index "\n"
+
+Stream AllOutput = write(dirname "all_projects_combined.csv", CP_UTF8 )
+int i = 0
+while(true){
+   if(i==index) break
+   /* print i "\n" */
+   AllOutput << (string get(accessDb,i,0))
+   AllOutput << ","
+   /* AllOutput << (string get(accessDb,i,1)) */
+   /* AllOutput << "," */
+   AllOutput << (string get(accessDb,i,2))
+   AllOutput << '\n'
+   i++
+}
+
+
+delete(Array accessDb)

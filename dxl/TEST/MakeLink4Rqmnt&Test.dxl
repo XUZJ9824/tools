@@ -1,0 +1,162 @@
+﻿Module srcModule, tarModule;
+Folder currFolder = current;
+Project currProj = current;
+Module currModule = current;
+Object srcObj, tarObj;
+
+string buttons[] = {"Done"}
+
+//Source Module Name. It stands for our test case module herein.
+//The operator who uses this file to make the link from test case to
+//requirement, should modify the names of source, target and link
+//module before starting.
+string strSrcModName = path (currModule) "/" name(currModule);
+//Target Module Name. It stands for our requirement module herein.
+string strTarModName = "/DATACOM/Mark II/Common/SRD/SRD_CPDLC HMI";
+//Default Link Name. It stands for our link module for test
+//case & requirement herein.
+string strLinkModuleName = "/CMU-CMF Requirements and Test/SYS_STC_LNK";
+
+string strTrace = "";
+string rqmntId = "";
+string tarObjId = "";
+int i = 0;
+int lenTrace = 0;
+int tarObjAbsNo = 0;
+
+srcModule = edit (strSrcModName, false);
+tarModule = read (strTarModName, false);
+
+string atrim(string str)
+{
+    string out = "";
+    int ii = 0;
+    int strLen = length(str);
+    while (ii < strLen)
+    {
+        if(str[ii:ii] != " ")
+        {
+            out = out str[ii:ii];
+        }
+        ii++;
+    }
+    return out;
+}
+
+int atoi(string str)
+{
+    Regexp reg = regexp "^([0-9]+)$";
+    int rtval = 0;
+    int ii = 0;
+    int strLen = length(str);
+    if(reg str)
+    {
+        while(ii <strLen)
+        {
+            if(str[ii:ii] == "0")
+            {
+                rtval = rtval * 10 + 0;
+            }
+            if(str[ii:ii] == "1")
+            {
+                rtval = rtval * 10 + 1;
+            }
+            if(str[ii:ii] == "2")
+            {
+                rtval = rtval * 10 + 2;
+            }
+            if(str[ii:ii] == "3")
+            {
+                rtval = rtval * 10 + 3;
+            }
+            if(str[ii:ii] == "4")
+            {
+                rtval = rtval * 10 + 4;
+            }
+            if(str[ii:ii] == "5")
+            {
+                rtval = rtval * 10 + 5;
+            }
+            if(str[ii:ii] == "6")
+            {
+                rtval = rtval * 10 + 6;
+            }
+            if(str[ii:ii] == "7")
+            {
+                rtval = rtval * 10 + 7;
+            }
+            if(str[ii:ii] == "8")
+            {
+                rtval = rtval * 10 + 8;
+            }
+            if(str[ii:ii] == "9")
+            {
+                rtval = rtval * 10 + 9;
+            }
+            ii++;
+        }
+        return rtval;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+if (srcModule == null)
+{
+    ack "Failed to open Module: " strSrcModName
+    halt()
+}
+
+if (tarModule == null)
+{
+    ack "Failed to open Module: " strTarModName
+    halt()
+}
+setDefaultLinkModule (strLinkModuleName);
+
+for srcObj in srcModule do
+{
+    strTrace = srcObj."Out-links";
+    strTrace = atrim(strTrace);
+    lenTrace = length (strTrace);
+    if (lenTrace > 0)
+    {
+        for (i = 0; i <= lenTrace; i++)
+        {
+            if ((strTrace[i:i] == ",") || (i == lenTrace))
+            {
+                rqmntId = rqmntId "\0";
+                int j = 0;
+                for (j = 0; j < length(rqmntId); j++)
+                {
+                    if(isdigit(rqmntId[j]))
+                    {
+                        tarObjAbsNo = atoi(rqmntId[j:]);
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                tarObj = gotoObject(tarObjAbsNo, tarModule);
+                if(tarObj == null) continue;
+                if(identifier(tarObj) != rqmntId) continue;
+                srcObj -> tarObj;
+                rqmntId = "";
+            }
+            else
+            {
+                rqmntId = rqmntId strTrace[i:i];
+            }
+        }
+    }
+}
+save(srcModule);
+
+//close (srcModule, true);
+close (tarModule, false);
+
+messageBox("Done. Traceability has been added.\n ", buttons, msgInfo);

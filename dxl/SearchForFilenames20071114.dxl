@@ -1,0 +1,184 @@
+//SearchForFilenames
+/*
+Script for task #7:
+    Create a script that takes a list of affected elements (.pr and .c filenames) and search the SDD for the object that references the element
+
+20071114  rngallion First attempt
+*/
+pragma runLim, 0
+
+const string TITLE = "SearchForFilenames20071114"
+const Regexp DEFAULT_SELECTED_MODNAMES_RE = regexp "^SW_SDD"
+const string NULLS[] = {}
+const string FORMAL = "Formal"
+const string OBJECT_TEXT = "Object Text"
+const string ABSOLUTE_NUMBER = "Absolute Number"
+
+Buffer Matches
+DB Db
+DBE FldrSpecDbe, FldrSpecBrowseDbe, ModNamesDbe, FileNamesDbe, MatchesDbe
+Item Itm
+Module CurMod, Mod
+Object Obj
+Regexp SearchRe
+Skip ModNames, MatchedFileNames
+bool ProgressCancelled
+int ProgressInt, ProgressLimit, MatchesCount
+string SelectedFldrSpec, CurModSpec, ModName, SelectedModName, MatchedFileName, ObjKey
+
+void ProcessMod() {
+    for Obj in entire Mod do {
+        if (isDeleted Obj) continue
+        Buffer buf = create
+        buf = Obj.OBJECT_TEXT
+        int bufStart = 0
+        while (search(SearchRe, buf, bufStart)) {
+            MatchedFileName = buf[bufStart + start 0: bufStart + end 0]
+            put(MatchedFileNames, MatchedFileName, MatchedFileName)
+            bufStart += 1 + end 0
+        }
+        if (bufStart == 0) continue
+        if (length Matches > 0) Matches += '\n'
+        ObjKey = Obj.ABSOLUTE_NUMBER ""
+        bool isFirstMatch = true
+        for MatchedFileName in MatchedFileNames do {
+            if (isFirstMatch) {
+                (((Matches += SelectedModName) += ':') += ObjKey) += " ("
+                isFirstMatch = false
+            } else {
+                Matches += ", "
+            }
+            Matches += MatchedFileName
+            delete(MatchedFileNames, MatchedFileName)
+            MatchesCount++
+        }
+        Matches += ')'
+    }
+}
+void ProcessSelectedModName() {
+	Mod = read(SelectedFldrSpec "/" SelectedModName, false)
+	if (null Mod) {
+        errorBox "ERROR: Could not read module: " SelectedModName
+		return
+	}
+	ProcessMod
+	if (! isVisible Mod) {
+		close Mod
+	}
+}
+void ProcessModNamesDbe() {
+	Matches = create
+	ProgressInt = ProgressLimit = 0
+	ProgressCancelled = false
+	for SelectedModName in ModNamesDbe do ProgressLimit++
+	if (ProgressLimit == 0) {
+		errorBox "Please select module(s) to process"
+		return
+	}
+	progressStart(Db, TITLE, "", ProgressLimit)
+	for SelectedModName in ModNamesDbe do {
+		if (length Matches > 0) Matches += '\n'
+    	progressMessage "Processing " SelectedModName
+		ProcessSelectedModName
+		progressStep ++ProgressInt
+		if (progressCancelled) {
+			ProgressCancelled = true
+			break
+		}
+	}
+	progressStop
+	if (ProgressCancelled) {
+		infoBox "Operation cancelled by the user"
+	}
+	setFromBuffer(MatchesDbe, Matches)
+	delete Matches
+	raise Db
+}
+bool PopulateSearchRe() {
+    SearchRe = null
+    Regexp re = regexp "(.+)[.]([^\n]+)"
+    Buffer buf = getBuffer FileNamesDbe
+    Buffer buf1 = create
+    int bufStart = 0
+    while (search(re, buf, bufStart)) {
+        if (length buf1 > 0) buf1 += '|'
+        combine(buf1, buf,bufStart, bufStart+end 1)
+        buf1 += "[.]"
+        combine(buf1, buf, bufStart+start 2, bufStart+end 2)
+        bufStart += 2 + end 0
+    }
+    if (length buf1 > 0) {
+        SearchRe = regexp stringOf buf1
+    }
+    delete buf1
+    delete buf
+    return (! null SearchRe)
+}
+void SearchSelected(DB db) {
+    MatchesCount = 0
+    set(MatchesDbe, "")
+    if (! PopulateSearchRe) {
+        errorBox "ERROR: Invalid 'Filenames to search for' specified"
+    } else {
+        ProcessModNamesDbe
+        infoBox MatchesCount " matches found"
+    }
+}
+void PopulateModNamesDbe() {
+	empty ModNamesDbe
+	for Itm in folder SelectedFldrSpec do {
+		if (type Itm != FORMAL) continue
+		ModName = name Itm
+		put(ModNames, ModName, ModName)
+	}
+	int i = 0
+	for ModName in ModNames do {
+		insert(ModNamesDbe, i, ModName)
+        if (DEFAULT_SELECTED_MODNAMES_RE ModName) set(ModNamesDbe, i, true)
+		i++
+		delete(ModNames, ModName)
+	}
+}
+void FldrSpecBrowseDbeSelected(DBE dbe) {
+	SelectedFldrSpec = fnMiniExplorer(Db, MINI_EXP_FP, null, null)
+	if (! folder SelectedFldrSpec) return
+	set(FldrSpecDbe, SelectedFldrSpec)
+	PopulateModNamesDbe
+}
+void CloseSelected(DB db) {
+    delete MatchedFileNames
+    delete ModNames
+	hide db
+}
+void AttachDbe(DBE dbe, string top, DBE t, string bottom, DBE b, string left, DBE l, string right, DBE r) {
+    (null t) ? dbe->"top"->top : dbe->"top"->top->t
+    (null b) ? dbe->"bottom"->bottom : dbe->"bottom"->bottom->b
+    (null l) ? dbe->"left"->left : dbe->"left"->left->l
+    (null r) ? dbe->"right"->right : dbe->"right"->right->r
+}
+ModNames = createString
+MatchedFileNames = createString
+SelectedFldrSpec = fullName current Folder
+CurMod = current Module
+if (null CurMod) {
+	CurModSpec = ""
+} else {
+	CurModSpec = fullName CurMod
+}
+Db = create(TITLE, styleCentered)
+FldrSpecBrowseDbe = button(Db, "Browse...", FldrSpecBrowseDbeSelected)
+AttachDbe(FldrSpecBrowseDbe, "form", null, "unattached", null, "unattached", null, "form", null)
+FldrSpecDbe = field(Db, "Folder to search:", SelectedFldrSpec, 40, true)
+AttachDbe(FldrSpecDbe, "form", null, "unattached", null, "form", null, "spaced", FldrSpecBrowseDbe)
+ModNamesDbe = listView(Db, listViewOptionMultiselect, 400, 10, NULLS)
+FileNamesDbe = text(Db, "Filenames to search for: (right-click to load from a file)", "", 400, 200, false)
+MatchesDbe = text(Db, "Matches Found", "", 400, 200, true)
+apply(Db, "Search", SearchSelected)
+close(Db, true, CloseSelected)
+realize Db
+insertColumn(ModNamesDbe, 0, "Module(s) to search (shift-click or control-click to select multiple)", 400, iconNone)
+setExtraHeightShare(ModNamesDbe, 0.3)
+setExtraHeightShare(FileNamesDbe, 0.3)
+setExtraHeightShare(MatchesDbe, 0.4)
+PopulateModNamesDbe
+show Db

@@ -1,0 +1,350 @@
+pragma runLim, 0;
+Module curMod=current;
+Object tmpObj;
+
+/*Common DXL script*/
+
+bool AddValueToStringColumn(Object aObj, string strProp, string strAddValue)
+{
+	
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDef=find(curMod, strProp);
+	
+	if( null(attDef) )
+	{
+		print "Error: Property" strProp "dost not exist!!";
+		return false;
+	}	
+	
+	//Add value to current object property
+	aObj.strProp = (aObj.strProp strAddValue);
+
+	return true;
+}
+
+bool SetValueToStringColumn(Object aObj, string strProp, string strNewValue)
+{
+	
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDef=find(curMod, strProp);
+	
+	if( null(attDef) )
+	{
+		print "Error: Property" strProp "dost not exist!!";
+		return false;
+	}	
+	
+	//Add value to current object property
+	aObj.strProp = strNewValue;
+
+	return true;
+}
+
+bool ReplaceValueInStringColumn(Object aObj, string strProp, string strOld, string strNew)
+{
+	
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDef=find(curMod, strProp);
+	
+	if( null(attDef) )
+	{
+		print "Error: Property" strProp "dost not exist!!";
+		return false;
+	}	
+	
+	print aObj.strProp "\n";	
+    
+   string s = aObj.strProp
+
+   int offset = 0;
+   int len =0 ;
+
+   if (findRichText(s, strOld, offset, len, false)) 
+   { 
+   //print "Offset = " offset "\n"
+   //print "Length = " len "\n" 
+   
+   string result = replaceRichText(s, offset, len, strNew) 
+    print result "\n" 
+    
+    //Add value to current object property
+	aObj.strProp = result;
+
+   } 
+   else 
+   { 
+   print "Failed to match" 
+   }
+	
+	return true;
+}
+
+
+/*
+add a specified value to a column named strProp in object aObj.
+The column must be a multi-value enumeration property,
+and strAddValue must exist in the enumeration property type.
+*/
+bool AddValueToMultiValueColumn(Object aObj, string strProp, string strAddValue)
+{
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDef=find(curMod, strProp);
+	
+	if( null(attDef) )
+	{
+		print "Error: Property" strProp "dost not exist!!";
+		return false;
+	}
+	
+	AttrType attType=attDef.type;
+	int nNumOfValue=attType.size;
+	/*string strNewValue[nNumOfValue+1];
+	int iNewNumber[nNumOfValue+1];
+	int iNewColor[nNumOfValue+1];
+	int iReplace[nNumOfValue+1];
+	iNewColor[nNumOfValue]=-1;
+	iReplace[nNumOfValue]=-1;*/
+	
+	bool bValExistInType=false;
+	for( i=0;i<nNumOfValue;i++)
+	{
+		//strNewValue[i]=attType.strings[i];
+		if( attType.strings[i] == strAddValue)
+		{
+			bValExistInType = true;
+			break;
+		}
+	}
+	
+	if(!bValExistInType)
+	{
+		print "Error: value" strAddValue "dost not exist!!";
+		return false;
+	}
+	
+	//Add value to current object property
+	aObj.strProp += strAddValue;
+
+	return true;
+};
+
+/*
+add a specified value to a column named strProp in object aObj.
+The column must be a multi-value enumeration property,
+and strAddValue must exist in the enumeration property type.
+*/
+bool DelValueFromMultiValueColumn(Object aObj, string strProp, string strDelValue)
+{
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDef=find(curMod, strProp);
+	
+	if( null(attDef) )
+	{
+		print "Error: Property" strProp "dost not exist!!";
+		return false;
+	}
+	
+	AttrType attType=attDef.type;
+	int nNumOfValue=attType.size;
+	/*string strNewValue[nNumOfValue+1];
+	int iNewNumber[nNumOfValue+1];
+	int iNewColor[nNumOfValue+1];
+	int iReplace[nNumOfValue+1];
+	iNewColor[nNumOfValue]=-1;
+	iReplace[nNumOfValue]=-1;*/
+	
+	bool bValExistInType=false;
+	for( i=0;i<nNumOfValue;i++)
+	{
+		//strNewValue[i]=attType.strings[i];
+		if( attType.strings[i] == strDelValue)
+		{
+			bValExistInType = true;
+			break;
+		}
+	}
+	
+	if(!bValExistInType)
+	{
+		print "Error: value" strDelValue "dost not exist!!";
+		return false;
+	}
+	
+	//Add value to current object property
+	aObj.strProp -= strDelValue;
+
+	return true;
+};
+
+bool CopyMultiValueColumn(Object aObj, string scrProp, string dstProp)
+{
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDefSrc=find(curMod, scrProp);
+	
+	if( null(attDefSrc) )
+	{
+		print "Error: Property" scrProp "dost not exist!!";
+		return false;
+	}
+	
+	AttrDef attDefDst=find(curMod, dstProp);
+	
+	if( null(attDefDst) )
+	{
+		print "Error: Property" dstProp "dost not exist!!";
+		return false;
+	}
+	
+	string tmpStr = aObj.scrProp;
+	aObj.dstProp = tmpStr;
+	
+	return true;
+}
+
+/*
+set a specified value to a column named strProp in object aObj.
+The column must be a multi-value enumeration property,
+and strAddValue must exist in the enumeration property type.
+*/
+bool SetValueToMultiValueColumn(Object aObj, string strProp, string strAddValue)
+{
+	if( null(aObj) ) 
+	{
+		print "Error: null object here!!"
+		return false;
+	};
+	
+	AttrDef attDef=find(curMod, strProp);
+	
+	if( null(attDef) )
+	{
+		print "Error: Property" strProp "dost not exist!!";
+		return false;
+	}
+	
+	AttrType attType=attDef.type;
+	int nNumOfValue=attType.size;
+	
+	bool bValExistInType=false;
+	for( i=0;i<nNumOfValue;i++)
+	{
+		//strNewValue[i]=attType.strings[i];
+		if( attType.strings[i] == strAddValue)
+		{
+			bValExistInType = true;
+			break;
+		}
+	}
+	
+	if(!bValExistInType)
+	{
+		print "Error: value" strAddValue "dost not exist!!";
+		return false;
+	}
+	
+	//Add value to current object property
+	aObj.strProp = strAddValue;
+
+	return true;
+}
+
+/*
+Apply a filter in current module for multi-value column
+strProp: specifie the colum name
+strValue: specifie the key value
+bInclude: bInclude=true means include those object which has value strValue,
+					otherwise exclude the object which has value strValue.
+*/
+/*
+example of compound Filter: 
+Filter f1;
+f1 = includes(attribute "Project", "PM-CPDLC") && (! includes(attribute "Project", "ATN") );
+set f1;
+filtering on;
+*/
+void FilterMultiValueColumn(string strProp, string strValue, bool bInclude)
+{
+	Filter f1;
+	if( bInclude )
+	{
+	 f1 = includes(attribute strProp, strValue);
+	}
+	else
+	{
+	 f1 = excludes(attribute strProp, strValue);
+	}
+	set f1;
+	filtering on;
+};
+
+
+/***Start Here***********************************************************************************************/
+/**Global values define here*/
+string strCrNumber = "CMU_CR_12630";
+string strCriticality = ""
+string strProject = "EPIC ATN"
+
+string swRelease = "ENG Bld1"
+string swRelease2 = "EPIC Block 3.0"
+string strEpicCriticality = "D"
+
+/*1:			common routines				*/
+/**/
+
+	//filer proper object
+	//FilterMultiValueColumn("Project", "FM 747-8", true);
+    //FilterMultiValueColumn("Project", "EPIC ATN", true);    
+    
+    //Filter  f1= includes(attribute "Project" ,"EPIC ATN");
+    //set f1;
+    //filtering on;
+	
+	//loop object
+	curMod=current;
+    tmpObj=current;
+	int iCnt =0;
+	//for tmpObj in curMod do 
+	{
+		iCnt +=1;
+		print iCnt;	    
+		//CopyMultiValueColumn(tmpObj, "Criticality", "EPIC Criticality");
+		//AddValueToStringColumn( tmpObj, "CR" , strCrNumber );
+		//SetValueToMultiValueColumn( tmpObj, "Project" , strProject );
+        SetValueToMultiValueColumn( tmpObj, "SW Release" , swRelease2 );
+		//SetValueToMultiValueColumn( tmpObj, "EPIC Criticality", strEpicCriticality );
+        //SetValueToStringColumn( tmpObj, "CR", strCrNumber );
+        
+        //SetValueToMultiValueColumn( tmpObj, "Requirement", "True" );
+        //SetValueToMultiValueColumn( tmpObj, "Test Method" , "HSI" );
+	}
+	print iCnt "object modified";

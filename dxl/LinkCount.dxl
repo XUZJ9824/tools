@@ -1,0 +1,61 @@
+//DXL code:
+// Count links
+/*
+This script checks every module in the current folder for outgoing/incoming links and sends it to tab-delimited text file. If you run the DXL from the DXL editor within the module, it will print the number of out links and in links for the module to a file local to your hard drive called linkCounts.xls under C:\temp.
+*/
+pragma runLim, 0
+Stream output
+Module startMod = current
+void getData(Item itm) {
+    Module thisMod = read(fullName(itm), false)
+    Object anObj
+    Skip modSkip = createString
+    Module oMod
+    int outCount = 0
+    int inCount = 0
+    for anObj in entire thisMod do {
+        Link aLink
+        for aLink in anObj -> "*" do {
+            outCount++
+        }
+        LinkRef lRef
+        for lRef in anObj <- "*" do {
+            string smn = fullName(source(lRef))
+            if (! open(module(smn))) {
+                oMod = read(smn, false)
+            }
+        }
+        for aLink in anObj <- "*" do {
+            inCount++
+        }
+    }
+    for oMod in modSkip do {
+        if (oMod != startMod) {
+            close(oMod)
+        }
+    }
+    if (thisMod != startMod) {
+        close(thisMod)
+    }
+    output << path(itm)
+    output << "\t"
+    output << name(itm)
+    output << "\t"
+    output << outCount "\t"
+    output << inCount "\n"
+} // getData
+void digDown(Folder thisFold) {
+    Item itm
+    for itm in thisFold do {
+        if (type(itm) == "Folder" or type(itm) == "Project") {
+            digDown(folder(itm))
+        }
+        else if (type(itm) == "Formal") {
+            getData(itm)
+        }
+    }
+} // digDown
+output = write("c:/temp/linkCounts.xls")
+output << "Path\tName\tOut\tIn\n"
+digDown(current Folder)
+close(output)

@@ -1,0 +1,565 @@
+/* =============================================================================
+ *   SRS ATTRIBUTES CHECK
+ * 
+ *   SRS Attributes Check use for self review and review of others work.
+ *   It checks various error combinations of attributes.
+ *
+ *   CHECKED ATTRIBUTES: Req Analysis, Requirement Allocation,
+ *                       Project, SW Release, EPIC Criticality,
+ *                       Verification Method, Incoming links
+ *
+ *   Copyright © March 2015 Honeywell, Tomas Valko
+ *
+ *   REVISION HISTORY:
+ *   Date         Name       Description
+ *   -----------  -------    -----------
+ *   13-NOV-2012  T.Valko    Initial development
+ *   31-JAN-2013  T.Valko    Added SRS baseline number to the printout
+ *   30-MAY-2013  T.Valko    Added check if EPIC Criticality attr is defined
+ *                           Fixed filtering for EPIC Criticality
+ *                           Added filter for SW_Release EPIC Block 2.61
+ *                           Updated checker for Project and SW Release combo
+ *   02-JUL-2014  T.Valko    Code cleanup, checking of existing attributes,
+ *                           removed checking of Derived Requirement
+ *   13-MAR-2015  T.Valko    Added function check_incoming_links() to check
+ *                           each incoming link if is EPIC ATN and is SRD or TST
+ *
+ ******************************************************************************/
+
+/* =============================================================================
+ * GLOBAL FLAGS
+ *
+ ******************************************************************************/
+
+/* Modify SILENT_MODE flag to turn on/off pop-up windows */
+
+const bool SILENT_MODE = true
+
+/* =============================================================================
+ * DON'T MODIFY SCRIPT UNDER, UNLESS YOU WANT TO CHANGE BEHAVIOR
+ *
+ ******************************************************************************/
+
+/* Create output buffer and define ouput colors */
+Buffer output = create
+output += "{\\colortbl;"
+output += "\\red0\\green0\\blue0;"        /* 1 - black */
+output += "\\red255\\green0\\blue0;"      /* 2 - red   */
+output += "\\red0\\green0\\blue255;"      /* 3 - blue  */
+output += "\\red150\\green150\\blue150;}" /* 4 - gray  */
+
+/* Global flag, if any error was found */
+bool NO_PROBLEM_FOUND = true
+
+/* =============================================================================
+ * LOCAL FUNCTIONS:
+ *    set_EPIC_global_project
+ *    count_objects_in_view
+ *    list_objects_IDs_in_view
+ *    show
+ *    show_empty
+ *    check_object_level
+ *
+ ******************************************************************************/
+
+/* Compose Filter for EPIC Only PROJECT attribute */
+Filter set_EPIC_global_project() {
+   Filter Project_ATN = contains(attribute "Project", "EPIC ATN", false)
+   Filter Project_AOA = contains(attribute "Project", "EPIC AOA", false)
+   Filter Project_POA = contains(attribute "Project", "EPIC POA", false)
+   
+   Filter Project_EPIC = (Project_POA || Project_AOA || Project_ATN)
+   
+   return Project_EPIC
+}
+
+/* Function to count filtered objects */
+int count_objects_in_view() {
+    int count = 0
+    
+    Object o
+    for o in (current Module) do count++
+    
+    return count
+}
+
+/* Add message to the output log */
+void list_objects_IDs_in_view(string title) {
+    Object o
+    int count = 0
+    bool first = true
+    
+    output += "{" title "}: "
+    for o in (current Module) do {
+        if (first) {
+            output += "{\\cf2 " o."Absolute Number" "}"
+            first = false
+        }
+        else {
+            output += ", {\\cf2 " o."Absolute Number" "}"
+        }
+        count++
+    }
+    
+    /* if there is no object ID to print,
+       print at least 0 */
+    if (count == 0) output += "{\\cf3 0}"
+    
+    output += "{\n}"
+}
+
+/*
+    "show" sets the passed filter, refreshes
+    the screen and waits for the next filter.
+    It modifies input filter with GLOBAL PROJECT filter
+*/
+void show(Filter f, string msg) {
+   
+   Filter Project_f = set_EPIC_global_project()
+   
+   Filter final_filter = Project_f && f
+   set final_filter
+   refresh current
+   
+   list_objects_IDs_in_view(msg)
+    
+   int count = count_objects_in_view()
+
+   if (count > 0) NO_PROBLEM_FOUND = false
+
+   if (!SILENT_MODE) {
+      msg = msg "\n\nNumber of Errors: " count "\n\nReady for next filter?"
+
+      /* use different box for info and error messages */
+      if (count == 0) infoBox msg
+      else ack msg
+   }
+}
+
+/*
+    "show_empty" sets the passed filter, refreshes
+    the screen and waits for the next filter.
+    No modification to input filter.
+*/
+void show_empty(Filter f, string msg) {
+   
+   Filter Project_f = set_EPIC_global_project()
+   
+   Filter final_filter = Project_f && f
+   
+   set final_filter
+   refresh current
+   
+   list_objects_IDs_in_view(msg)
+    
+   int count = count_objects_in_view()
+
+   if (count > 0) NO_PROBLEM_FOUND = false
+
+   if (!SILENT_MODE) {
+      msg = msg "\n\nNumber of Errors: " count "\n\nReady for next filter?"
+
+      /* use different box for info and error messages */
+      if (count == 0) infoBox msg
+      else ack msg
+   }
+}
+
+/*  
+    checks if current object has same level as previous one
+    checks that current obj is one level down after Heading object
+*/
+void check_object_level() {
+    
+    Object o_cur, o_prev
+    bool first = true
+    bool compare = false
+    string heading
+    
+    output += "{Object Level Error}: "
+    
+    for o_cur in (current Module) do {
+        if (compare) {
+            heading = o_prev."Object Heading"
+            // if current object is level down
+            if (level(o_cur) > level(o_prev)){
+                // and previous object has empty Heading
+                if (length(heading) == 0){
+                    // and current and previous objects does not contain OLE
+                    if (!containsOle(o_cur."Object Text") && !containsOle(o_prev."Object Text")){ 
+                        // Error in Object Level Attribute
+                        if (first) {
+                            output += "{\\cf2 " o_cur."Absolute Number" "}"
+                            first = false
+                        }
+                        else {
+                            output += ", {\\cf2 " o_cur."Absolute Number" "}"
+                        }
+                        NO_PROBLEM_FOUND = false
+                    }
+                }
+            }
+            // if previous object has Heading
+            else if (length(heading) > 0){
+                // and current object has empty Heading
+                heading = o_cur."Object Heading"
+                if (length(heading) == 0){
+                    // and current object is not 1 level down
+                    if (level(o_cur) - level(o_prev) != 1){
+                        // Error in Object Level Attribute
+                        if (first) {
+                            output += "{\\cf2 " o_cur."Absolute Number" "}"
+                            first = false
+                        }
+                        else {
+                            output += ", {\\cf2 " o_cur."Absolute Number" "}"
+                        }
+                        NO_PROBLEM_FOUND = false
+                    }
+                }
+            }
+        }
+        o_prev = o_cur
+        compare = true
+    }
+    
+    if (first) output += "{\\cf3 0}"
+}
+
+/*  
+    checks requirement object incoming links
+    SRS requirement should have link from SRD and TEST modules
+*/
+void check_incoming_links() {
+   /* for object search */
+   Object   o_cur
+   Link     lnk_to_o
+   /* For findPlainText function */
+   int      off = null
+   int      len = null
+   bool     matchCase = false
+   bool     reverse = false
+   /* for output */
+   bool     SRD_found
+   string   SRD_output = ""
+   bool     TST_found
+   string   TST_output = ""
+
+   string   abs_number = ""
+   
+   /* Check module for existing attribute */
+   AttrDef find_req_alloc = find (current Module, "Requirement Allocation")
+   AttrDef find_req_alloc_alt = find (current Module, "Requirement Allocation ")
+   
+   /* Loop through all objects */
+   for o_cur in (current Module) do {
+   
+      SRD_found = false
+      TST_found = false
+
+      string attr = o_cur."Req Analysis"
+      /* Look only on requirement objects */ 
+      if (attr == "Requirement") {
+         
+         /* Look only on EPIC ATN objects with Req Allocation CMU */
+         string obj_proj = o_cur."Project"
+         bool obj_is_epic_atn = findPlainText(obj_proj, "EPIC ATN", off, len, matchCase)
+                  
+         string obj_req_alloc
+         if (!null find_req_alloc){
+            obj_req_alloc = o_cur."Requirement Allocation"
+         }
+         else if(!null find_req_alloc_alt){
+            obj_req_alloc = o_cur."Requirement Allocation "
+         }
+         else{ /* If attribute Requirement Allocation is not present don't filter out the object */
+            obj_req_alloc = "CMU"
+         }
+         bool obj_is_CMU = findPlainText(obj_req_alloc, "CMU", off, len, matchCase)
+                  
+         if (obj_is_epic_atn && obj_is_CMU) {
+            /* For ALL LINKS TO SRS */
+            /* Firstly load all modules based on link reference */
+            LinkRef lr
+            for lr in all((o_cur) <- "*") do {
+               ModuleVersion mvSource = sourceVersion lr
+               Module modSrc = data mvSource
+               if (null modSrc) 
+                  modSrc = load(mvSource, false)
+            }
+            
+            /* Then loop through the links */
+            for lnk_to_o in all(o_cur<-(NLS_("*"))) do
+            {
+               string modname = fullName(source lnk_to_o)
+               string shortname = name(source lnk_to_o)
+               
+               /* open linked module */
+               if (!open module modname)
+                     read(modname,false)
+               
+               /* Check objects Project */
+               Object o_lnk = source lnk_to_o
+               string o_lnk_proj = o_lnk."Project"
+               bool o_lnk_is_epic_atn = findPlainText(o_lnk_proj, "EPIC ATN", off, len, matchCase)
+               bool o_lnk_is_deleted = isDeleted(o_lnk)
+               /* If link is from EPIC ATN project and the object is not deleted */
+               if (!null o_lnk && o_lnk_is_epic_atn && !o_lnk_is_deleted)
+               {
+                  /* If it is SRD module */
+                  if ( findPlainText (shortname, "SRD", off, len, matchCase, reverse) )
+                  {
+                     SRD_found = true
+                  }
+                  else if ( findPlainText (shortname, "SVP", off, len, matchCase, reverse)  ||
+                            findPlainText (shortname, "STC", off, len, matchCase, reverse)  ||
+                            findPlainText (shortname, "TATS", off, len, matchCase, reverse) ||
+                            findPlainText (shortname, "HSI", off, len, matchCase, reverse)  ||
+                            findPlainText (shortname, "Test", off, len, matchCase, reverse) )
+                  {
+                     TST_found = true
+                  }
+               }
+               
+            } /* End FOR each link for specific object */
+
+            abs_number = o_cur."Absolute Number"
+            
+            /* If the object does not have any links from SRD or TST log it */
+            if(!SRD_found) {
+               SRD_output = SRD_output abs_number ", "
+            }
+            if(!TST_found) {
+               TST_output = TST_output abs_number ", "
+            }
+            
+         } /* End IF object is EPIC ATN and Req Allocation CMU */
+      
+      } /* End IF object is Requirement */
+      
+   } /* End FOR each object in module */
+
+   output += "{Req Analysis is Requirement but has no links from SRD}: "
+   if (SRD_output == ""){
+      output += "{\\cf3 0\n}"
+   }
+   else {
+      output += "{\\cf2 " SRD_output "\n}"
+      NO_PROBLEM_FOUND = false
+   }
+   
+   output += "{Req Analysis is Requirement but has no links from HSI, STC, SVP or TATS}: "
+   if (TST_output == "") {
+      output += "{\\cf3 0\n}"
+   }
+   else {
+      output += "{\\cf2 " TST_output "\n}"
+      NO_PROBLEM_FOUND = false
+   }
+}
+
+/* =============================================================================
+ * FILTER DEFINITIONS
+ *
+ ******************************************************************************/
+
+filtering on
+
+/* Find which attributes are present in current Module */
+Module m = current Module
+AttrDef find_epic_criticality = find (m, "EPIC Criticality")
+AttrDef find_req_alloc = find (m, "Requirement Allocation")
+AttrDef find_req_alloc_alt = find (m, "Requirement Allocation ")
+AttrDef find_ver_method = find (m, "Verification Method ")
+
+/* Filter definition */
+Filter Req_Empty = isNull(attribute "Req Analysis")
+Filter Ver_Empty
+if (!null find_ver_method){
+   Ver_Empty = isNull(attribute "Verification Method ")
+}
+Filter Alloc_Empty
+if (!null find_req_alloc){
+   Alloc_Empty = isNull(attribute "Requirement Allocation")
+}
+else if(!null find_req_alloc_alt){
+   Alloc_Empty = isNull(attribute "Requirement Allocation ")
+}
+Filter Crit_Empty = isNull(attribute "Epic Criticality")
+Filter Project_Empty = isNull(attribute "Project")
+Filter SW_Release_Empty = isNull(attribute "SW Release")
+
+Filter Req_False = attribute "Req Analysis" == "Other"
+Filter Req_True = attribute "Req Analysis" == "Requirement"
+
+Filter Criticality
+if (!null find_epic_criticality){
+   Criticality = contains(attribute "EPIC Criticality", "C", false) || 
+                 contains(attribute "EPIC Criticality", "D", false)
+}
+
+Filter Object_has_shall = contains(attribute "Object Text", "shall", false)
+
+Filter Project_ATN = contains(attribute "Project", "EPIC ATN", false)
+Filter Project_AOA = contains(attribute "Project", "EPIC AOA", false)
+Filter Project_POA = contains(attribute "Project", "EPIC POA", false)
+Filter Project_EPIC = set_EPIC_global_project()
+
+/* Determine available SW Releases in module */
+AttrDef  ad = find(current Module,"SW Release")
+AttrType at = ad.type
+Skip     sk_old = createString()
+Skip     sk_aoa = createString()
+Skip     sk_atn = createString()
+int      i = 0
+string   Enum
+int      offset = null
+int      len = null
+
+for (i = 0; i < at.size; i++)
+{
+   if (findPlainText (at.strings[i], "EPIC Block 0.", offset, len, false, false))
+   {
+      put(sk_old,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 1.", offset, len, false, false))
+   {
+      put(sk_aoa,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 2.", offset, len, false, false))
+   {
+      put(sk_atn,at.strings[i],at.strings[i])
+   }
+   else if (findPlainText (at.strings[i], "EPIC Block 3.", offset, len, false, false))
+   {
+      put(sk_atn,at.strings[i],at.strings[i])
+   } 
+}
+
+Filter SW_Release_Epic_Base = contains(attribute "SW Release", "Epic Baseline", false)
+Filter SW_Release_Epic_Common = SW_Release_Epic_Base
+Filter f_temp
+for Enum in sk_old do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+   
+   SW_Release_Epic_Common = SW_Release_Epic_Common || f_temp
+}
+
+Filter SW_Release_AOA = SW_Release_Epic_Common
+for Enum in sk_aoa do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+
+   SW_Release_AOA = SW_Release_AOA || f_temp
+}
+
+Filter SW_Release_ATN = SW_Release_Epic_Common
+for Enum in sk_atn do {
+   f_temp = contains(attribute "SW Release", Enum, false)
+
+   SW_Release_ATN = SW_Release_ATN || f_temp
+}
+
+Filter SW_Release_EPIC = (SW_Release_AOA || SW_Release_ATN)
+/* End of SW Releases filters */
+
+Filter Has_Incoming_Links = hasLinks(linkFilterIncoming, "*")
+Filter Has_No_Incoming_Links = hasNoLinks(linkFilterIncoming, "*")
+
+/* =============================================================================
+ * FILTER USAGE
+ *
+ ******************************************************************************/
+
+/* Add header to the output log */
+output += "{\\b " name (current Module) "} "
+output += "{Baseline \\b " version (current Module) "}\n\n"
+
+/* Empty values */
+output += "{\\b EMPTY attributes\n}"
+show_empty(Req_Empty, "\t Req Analysis")
+
+if (!null find_ver_method)
+   show_empty(Ver_Empty, "\t Verification Method")
+else
+   output += "{\\cf4 \t Verification Method: NA}\n"
+   
+if (!null find_epic_criticality)
+   show(Project_EPIC && Crit_Empty, "\t EPIC Criticality")
+else
+   output += "{\\cf4 \t EPIC Criticality: NA}\n"
+
+if (!null find_req_alloc)
+   show_empty(Alloc_Empty, "\t Requirement Allocation")
+else if (!null find_req_alloc_alt)
+   show_empty(Alloc_Empty, "\t Requirement Allocation")
+else
+   output += "{\\cf4 \t Requirement Allocation: NA}\n"
+
+show_empty(Project_Empty, "\t Project")
+show_empty(SW_Release_Empty, "\t SW Release")
+output += "{\n}"
+
+// Requirements
+show(Req_False && Object_has_shall, "Req Analysis is Other but Object Text contains word SHALL")
+output += "{\n}"
+
+// Criticality
+if (!null find_epic_criticality)
+   show(Project_EPIC && !Criticality, "EPIC Criticality is not C or D")
+else
+   output += "{\\cf4 \t EPIC Criticality is not D: NA}\n"
+output += "{\n}"
+
+// Project & SW Release
+show(Project_EPIC && !SW_Release_EPIC, "Project is EPIC (POA, AOA or ATN) but SW Release has no EPIC build")
+show(Project_ATN && (!Project_AOA) && (!SW_Release_ATN), "Project is ATN only but SW Release has no ATN build")
+show(Project_AOA && (!Project_ATN) && (!SW_Release_AOA), "Project is AOA only but SW Release has no AOA build")
+output += "{\n}"
+
+// Links and Requirements
+show(Req_True && Has_No_Incoming_Links, "Req Analysis is Requirement but has no incoming links")
+show(Req_False && Has_Incoming_Links, "Req Analysis is Other but has incoming links")
+output += "{\n}"
+
+filtering off
+
+/* Object Level Attribute */
+check_object_level ()
+output += "{\n\n}"
+
+/* Detailed Incoming Links check */
+check_incoming_links()
+output += "{\n}"
+
+/* =============================================================================
+ * END OF FILTER USAGE
+ *
+ ******************************************************************************/
+
+/* Pop up result window */
+if (NO_PROBLEM_FOUND == true){
+    infoBox "NO PROBLEMS IN ATTRIBUTES."
+}
+else{
+    ack "ERRORS IN ATTRIBUTES!!!"
+}
+
+/* =============================================================================
+ * OUTPUT WINDOW
+ *
+ ******************************************************************************/
+DB bcDB = create "SRS Check Attributes Results"
+   
+/* The DBE element which will store the check result in the rich text format */
+DBE redliningDBE = richText(bcDB, "", "initial", 570, 600, true)
+realize bcDB  
+useRTFColour(redliningDBE, true) // The usage of the perm allows redlining feature
+set(redliningDBE, output)
+delete output
+show bcDB
+
+/* =============================================================================
+ * END OF DXL SCRIPT
+ *
+ ******************************************************************************/
+ 

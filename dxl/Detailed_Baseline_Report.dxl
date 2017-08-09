@@ -1,0 +1,153 @@
+//********************************************************************************
+// This script prints a report of the latest baselines sent overseas and includes
+// baseline information.
+//
+// Modifications:
+//
+// Date:        Who:    Description:
+// 10 Jul 2003  DB      Baseline
+//
+//********************************************************************************
+
+
+pragma runLim,0 // turn off the timeout dialog
+
+Stream file = write "c:/temp/Overseas_Baseline_Report.txt"
+Stream BigReport = write "c:/temp/Overseas_Detailed_Baseline_Report.txt"
+
+
+//***************************************************
+// Get the baseline information for the current module
+//***************************************************
+void GetBaselineInfo(string modName, string Destination)
+{
+   Module m
+   Object o
+   Column c
+   Baseline b
+
+   m = read(modName)
+   Status = lastError
+   if (null Status){
+      print "opening " modName "\n"
+      file << modName "\t"
+      BigReport << "\n***********************************************\n"
+      BigReport << modName "\n\n"
+      if (!(null current Module)){
+         for b in current Module do  {
+             BigReport << (major b) "." (minor b) "\t" (user b) "\t" (dateOf b) "\t" (annotation b) "\n"
+         } // for object
+         file << (major b) "." (minor b) "\tSent to " (Destination) "\n"
+         close m
+      }else{
+         print "*** null module " modName "\n"
+         file << "Module not found \t" (Destination) "\n"
+         BigReport << "Module not found \t" (Destination) "\n"
+      }
+   }else{
+      print "*** unable to open " modName "\n"
+      file << "***ERROR*** Unable to open " modName "\n"
+      BigReport << "***ERROR*** Unable to open " modName "\n"
+   } // if null status
+} //End of procedure
+
+
+//******************************************************************************
+// Main
+//******************************************************************************
+
+file << "Report of all DOORS Formal modules currently sent overseas - current baseline data.\n\n"
+
+BigReport << "Detailed report of all DOORS Formal modules currently sent overseas - current baseline data.\n\n"
+
+noError
+//
+// Generate the SRS baseline report
+//
+file << "\n * * * * * * * * * * * * * SRS Baselines * * * * * * * * * * * * * \n\n"
+BigReport << "\n * * * * * * * * * * * * * SRS Baselines * * * * * * * * * * * * * \n\n"
+
+GetBaselineInfo ("SYS_SRS_ACARS_Message",			"BARS")
+GetBaselineInfo ("SYS_SRS_ATS_HGI",				"BARS")
+GetBaselineInfo ("SYS_SRS_BIT",					"HTSL")
+GetBaselineInfo ("SYS_SRS_Broadcast_Input_Output",		"BARS/HTSL")
+GetBaselineInfo ("SYS_SRS_Database",				"HTSL")
+GetBaselineInfo ("SYS_SRS_DMT_DLT",				"HTSL")
+GetBaselineInfo ("SYS_SRS_End_System_Interface",		"BARS/HTSL")
+GetBaselineInfo ("SYS_SRS_Event_Failure_Logging",		"BARS")
+GetBaselineInfo ("SYS_SRS_Manager_Pages",			"BARS")
+GetBaselineInfo ("SYS_SRS_Protocol_Management",			"HTSL")
+GetBaselineInfo ("SYS_SRS_Routing_Function",			"BARS")
+GetBaselineInfo ("SYS_SRS_RTCmgmt",				"HTSL")
+GetBaselineInfo ("SYS_SRS_Subnetwork_Interface",		"BARS")
+GetBaselineInfo ("SYS_SRS_Subnetwork_System_Management_Entity",	"BARS/HTSL")
+GetBaselineInfo ("SYS_SRS_VDR_Protocol",			"BARS/HTSL")
+
+//
+// Generate the SRD baseline report
+//
+file << "\n * * * * * * * * * * * * * SRD Baselines * * * * * * * * * * * * * \n\n"
+BigReport << "\n * * * * * * * * * * * * * SRD Baselines * * * * * * * * * * * * * \n\n"
+
+GetBaselineInfo ("SW_SRD_BCAS_CD_Protocol",		"BARS")
+GetBaselineInfo ("SW_SRD_BCAS_HGI",			"BARS")
+GetBaselineInfo ("SW_SRD_CA_Crew_Alerts",		"BARS")
+GetBaselineInfo ("SW_SRD_CP_DB_Display_Builder",	"BARS")
+GetBaselineInfo ("SW_SRD_CP_KP_Key_Processor",		"BARS")
+GetBaselineInfo ("SW_SRD_CP_LM_Log_Manager",		"BARS")
+GetBaselineInfo ("SW_SRD_CP_SM_State_Manager",		"BARS")
+GetBaselineInfo ("SW_SRD_CP_SP_Scratchpad_Manager",	"BARS")
+GetBaselineInfo ("SW_SRD_DH_BM_Buffer_Manager",		"BARS")
+GetBaselineInfo ("SW_SRD_DH_Database_Handler",		"BARS")
+GetBaselineInfo ("SW_SRD_FD_Fault_Display",		"BARS")
+GetBaselineInfo ("SW_SRD_FH_Fault_Event_Log_Manager",	"BARS")
+GetBaselineInfo ("SW_SRD_HI_HFDR_Subnetwork_Mgr",	"BARS")
+GetBaselineInfo ("SW_SRD_ID_Discrete_Input",		"BARS")
+GetBaselineInfo ("SW_SRD_LU_Logic_Unit",		"BARS")
+GetBaselineInfo ("SW_SRD_MC_VHF716_Modem_Interface",	"BARS")
+GetBaselineInfo ("SW_SRD_MD_Message_Decoder",		"BARS")
+GetBaselineInfo ("SW_SRD_ME_Message_Encoding",		"BARS")
+GetBaselineInfo ("SW_SRD_OD_Discrete_Outputs",		"BARS")
+GetBaselineInfo ("SW_SRD_RF_VHF_Subnetwork_Manager",	"BARS")
+GetBaselineInfo ("SW_SRD_SI_Satcom_Subnetwork_Manager",	"BARS")
+GetBaselineInfo ("SW_SRD_Utils_Formatting_Function",	"BARS")
+GetBaselineInfo ("SW_SRD_VC_VDR_Interface_Protocol",	"BARS/HTSL")
+GetBaselineInfo ("SW_SRD_VME_AVLC",			"HTSL")
+
+//
+// Generate the SDD baseline report
+//
+file << "\n * * * * * * * * * * * * * SDD Baselines * * * * * * * * * * * * * \n\n"
+BigReport << "\n * * * * * * * * * * * * * SDD Baselines * * * * * * * * * * * * * \n\n"
+
+GetBaselineInfo ("SW_SDD_CA_Crew_Alerts",		"BARS")
+GetBaselineInfo ("SW_SDD_CD_Protocol",			"BARS")
+GetBaselineInfo ("SW_SDD_CP_DB_Display_Builder",	"BARS")
+GetBaselineInfo ("SW_SDD_CP_KP_Key_Processor",		"BARS")
+GetBaselineInfo ("SW_SDD_CP_STATE_MANAGER",		"BARS")
+GetBaselineInfo ("SW_SDD_CP_SP_Scratchpad_Manager",	"BARS")
+GetBaselineInfo ("SW_SDD_DH_BM_Buffer_Manager",		"BARS")
+GetBaselineInfo ("SW_SDD_DH_DA_Database_Access",	"BARS")
+GetBaselineInfo ("SW_SDD_DH_PA_Param_Access",		"BARS")
+GetBaselineInfo ("SW_SDD_DH_UT_Utilities",		"BARS")
+GetBaselineInfo ("SW_SDD_FD_Fault_Display",		"BARS")
+GetBaselineInfo ("SW_SDD_FH_Fault_Event_Log_Manager",	"BARS")
+GetBaselineInfo ("SW_SDD_HI_HFDR_Subnetwork_Mgr",	"BARS")
+GetBaselineInfo ("SW_SDD_ID_Input_Discrete",		"BARS")
+GetBaselineInfo ("SW_SDD_LM_LOG_MGR",			"BARS")
+GetBaselineInfo ("SW_SDD_LU_Logic_Unit",		"BARS")
+GetBaselineInfo ("SW_SDD_MC_VHF716_Modem_Interface",	"BARS")
+GetBaselineInfo ("SW_SDD_MD_Message_Decoder",		"BARS")
+GetBaselineInfo ("SW_SDD_ME_Message Encoding",		"BARS")
+GetBaselineInfo ("SW_SDD_OD_Output_Discrete",		"BARS")
+GetBaselineInfo ("SW_SDD_RF_VHF_Subnetwork_Manager",	"BARS")
+GetBaselineInfo ("SW_SDD_SI_Satcom_Subnetwork_Manager",	"BARS")
+GetBaselineInfo ("SW_SDD_VC_VDR_Interface_Protocol",	"BARS/HTSL")
+
+print "end of dxl script\n\n"
+print "See file C:\\Temp\\Overseas_Baseline_Report.txt for the report output.\n"
+file << "\nend of report." "\n"
+BigReport << "\nend of report." "\n"
+
+close (file)
+close (BigReport)

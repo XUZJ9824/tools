@@ -1,0 +1,564 @@
+//Object history
+/*
+REVISION HISTORY:
+Date         Name       Description
+-----------  -------    -----------
+16-Sep-2013  T.Klir     Initial draft.
+17-Feb-2015  T.Klir		Added verification that baselines are selected.
+								Show history moved and made default button
+02-Oct-2015  T.Klir     Added an option to show baseline description   
+*/
+
+pragma runLim,0
+
+const string TITLE = "Show history"
+const string COLORS_DEFINITION = "{\\colortbl;\\red0\\green0\\blue0;\\red255\\green0\\blue0;\\red0\\green0\\blue255;}"
+
+//-------------------------------------------------------------------------------
+//  DEFAULT ATTRIBUTES -  to be pre-selected when dialog opens ------
+//------------------------------------------------------------------------------
+// To add or remove which attributes will be selected by default, add or remove
+// attribute name(s) to the below array.
+
+const string DEFAULT_ATTRIBUTES_TO_COMPARE[] =
+{
+   "Object Heading",
+   "Object Text"
+}
+
+//------------------------------------------------------------------------------
+//  END DEFAULT ATTRIBUTES
+//------------------------------------------------------------------------------
+
+//--- start module
+
+Module homeModule   = null
+
+//---- generic baseline variable
+
+Baseline b
+
+DBE objectId = null
+string objectIdStr
+int objectIdInt
+DBE showBaselineDesc
+int showBaselineDescSel = 1
+
+objectIdStr = "It doesn't work :("
+
+//------ Define the skip associated with the main tab
+
+DB win         = null
+DBE list1      = null
+DBE list2      = null                  // Baseline selection lists
+DBE atrListDbe = null                   //jdn attribute selection list 041207
+
+Skip baselines = createString   //stores baselines indexed by name
+
+string empty[] = {}             //empty array used to initialize list and choice DBEs
+
+//-------------------------------------------------------------------------------------------------
+bool attribUnchanged(Object o1, o2,string attr, Buffer redliningResult)
+//-------------------------------------------------------------------------------------------------
+{
+   Buffer b1        = create
+   b1               = o1.attr
+   Buffer b2        = create
+   b2               = o2.attr
+   bool returnValue = true
+
+   setempty (redliningResult)
+   if (b1 != b2)
+   {
+      Buffer redlining = create
+      string diffmsg = diff(redlining, b1, b2)
+      if (!null diffmsg)
+      {
+         errorBox "Unable to compute redlining: " diffmsg
+      }
+
+      redliningResult = "{\\i object has differing } {\\b " attr (tempStringOf redlining) "}\n\n"
+
+      accept o1                      // set filter
+      accept o2                      // on both objects
+      delete redlining
+      returnValue = false
+   }//end if
+
+   delete b1
+   delete b2
+   return returnValue
+} //end
+
+
+string getBaselineString (Baseline b)
+{
+   string baselineString
+
+   if(null b)
+   {
+      return "current"
+   }
+
+   baselineString = (major b) "." (minor b) " " (suffix b)
+   return baselineString
+}
+
+bool cmpBaselines(Baseline b1, Baseline b2)
+{
+   if (null b1 || null b2)
+   {
+      return false
+   }
+
+   if (getBaselineString(b1) == getBaselineString(b2))
+   {
+      return true
+   }
+   return false
+}
+
+void addNewObjectAttributes(Buffer buf, Object obj, Skip atrList)
+{
+   string attr = ""
+
+   for attr in atrList do
+   {
+      buf += "\n{\\b " attr "} \n" obj.attr "\n"
+   }
+}
+
+void addBaselinesHeading (Buffer buf, Baseline oldBaseline, Baseline newBaseline)
+{
+   buf += COLORS_DEFINITION
+   buf += "\n {\\ul Changes between } {\\cf2\\ul\\b " getBaselineString (oldBaseline) "} {\\ul and }"
+
+   if(null newBaseline)
+   {
+      buf += "{\\cf3\\ul\\b current}\n"
+   }
+   else
+   {
+      buf += "{\\cf3\\ul\\b " getBaselineString(newBaseline) "}\n"
+   }
+}
+
+//void createHistory (DBE dbe)
+void createHistory (DB db)
+{
+   string name1        = ""
+   string name2        = ""
+   int idx1            = 0
+   int idx2            = 0
+   Baseline startBaseline
+   Baseline endBaseline
+   bool firstBaselineReached = false
+   Module olderModule = null
+   Module newerModule = null
+   Baseline newerBaseline = null
+   Baseline olderBaseline = null
+   Buffer redlinedTxt = create
+   Buffer redlinedMsg = create
+   bool objectHasChanged
+   Object reqNewerObject = null
+   Object reqOlderObject = null
+   Skip atrList = createString
+   string str = ""
+   bool objectDeleted = false
+   bool found
+   bool showBaselineDescBool = (get showBaselineDesc) == showBaselineDescSel
+
+   idx1 = get list1              // integer position in list
+   idx2 = get list2
+
+   name1 = get list1             // selected baseline name
+   name2 = get list2
+	
+	if (idx1 == -1 || idx2 == -1)
+   {
+		infoBox "Baselines must be selected!"
+		return
+	}
+	
+   find (baselines, name1 , startBaseline)
+   found = find (baselines, name2 , endBaseline)
+	
+   if (!found)
+   {
+      /* current baseline selected, this baseline is not in the list */
+      endBaseline = null
+   }
+
+   if (idx1 <= idx2)
+   {
+      infoBox "Selected older baseline must be older than newer selected baseline!"
+      return
+   }
+
+   objectIdStr = get(objectId)
+
+   if (isspace(objectIdStr[0]))
+   {
+      /* space is entered as first char */
+      /* verification necessary for case when only a space were entered */
+      infoBox "Only numbers are allowes as Object ID!"
+      return
+   }
+
+   if (!isValidInt(objectIdStr))
+   {
+      infoBox "Only numbers are allowed as Object ID!"
+      return
+   }
+
+   objectIdInt = intOf(objectIdStr)
+
+   if (objectIdInt == 0)
+   {
+      infoBox "You must enter Object Id!"
+      return
+   }
+
+   redlinedTxt += COLORS_DEFINITION
+   redlinedTxt += "{\\b " fullName(current Module) "}\n"
+   redlinedTxt += "{ Showing history from baseline } {\\b " name1  "} { to baseline }{\\b " name2 "}\n"
+
+   curMod = current Module
+   Skip baselineList = create()
+   Baseline bas = null
+
+   //--- load selected attribute names into skip list
+   for str in atrListDbe do
+   {
+      put (atrList,str,str)
+   }
+
+   for newerBaseline in current Module do
+   {
+      /* skip baselines older than selected newer baseline */
+      if (!firstBaselineReached)
+      {
+         if (cmpBaselines(newerBaseline, startBaseline))
+         {
+            firstBaselineReached = true
+         }
+         else
+         {
+            continue
+         }
+      }
+
+      olderModule = newerModule
+      
+      newerModule = load(newerBaseline, false)
+
+      if (olderModule == null)
+      {
+         continue // one more loop to get data to compare
+      }
+
+      olderBaseline = baselineInfo(olderModule)
+
+      //-----------     make sure filtering is off on both sides.
+      current = newerModule
+      filtering off
+      current = olderModule
+      filtering off
+
+      current = homeModule
+
+      reqOlderObject = object(objectIdInt, olderModule)
+      reqNewerObject = object(objectIdInt, newerModule)
+
+      if (null reqOlderObject)
+      {
+         if (null reqNewerObject)
+         {
+            /* object doesn't exit in older neither in newer baseline */
+            if (cmpBaselines(newerBaseline,endBaseline))
+            {
+               break
+            }
+            continue
+         }
+
+         addBaselinesHeading(redlinedTxt, olderBaseline, newerBaseline)
+         redlinedTxt = redlinedTxt "{\\i object #" objectIdStr " has been} {\\cf3 created in baseline "  getBaselineString(newerBaseline) "}\n"
+         addNewObjectAttributes(redlinedTxt, reqNewerObject, atrList)
+
+         if (showBaselineDescBool)
+         {
+            redlinedTxt = redlinedTxt "{\\i \nBaseline description:\n" annotation newerBaseline "}\n"
+         }
+         
+         if (cmpBaselines(newerBaseline,endBaseline))
+         {
+            break
+         }
+         continue
+      }
+
+      if (null reqNewerObject)
+      {
+         addBaselinesHeading(redlinedTxt, olderBaseline, newerBaseline)
+         redlinedTxt = redlinedTxt "{\\i object #" objectIdStr " has been} {\\cf2\\strike deleted in baseline "  getBaselineString(newerBaseline) "}\n"
+         
+         if (showBaselineDescBool)
+         {
+            redlinedTxt = redlinedTxt "{\\i \nBaseline description:\n" annotation newerBaseline "}\n"
+         }
+         
+         objectDeleted = true
+         break
+      }
+
+      addBaselinesHeading(redlinedTxt, olderBaseline, newerBaseline)
+
+      objectHasChanged = false
+
+      /* compare selected attributes */
+      for str in atrList do
+      {
+         if (!attribUnchanged(reqOlderObject, reqNewerObject, str, redlinedMsg))
+         {
+            redlinedTxt += exportRTFString(tempStringOf redlinedMsg)
+            objectHasChanged = true
+         }
+      }
+
+      if (objectHasChanged == false)
+      {
+         redlinedTxt = redlinedTxt "{\\i No changes }\n"
+      }
+      else if (showBaselineDescBool)
+      {   
+         redlinedTxt = redlinedTxt "{\\i Baseline description:\n" annotation newerBaseline "}\n"
+      }
+
+      setempty redlinedMsg
+
+      if(idx2 != 0)
+      {
+         /* end baseline is not current, terminate if end baseline reached */
+         if (cmpBaselines(newerBaseline, endBaseline))
+         {
+            break
+         }
+      }
+   }
+
+   /* compare latest baseline with current version */
+   /* (for loop goes only through baselines, current is not considered as a baseline) */
+   if (idx2 == 0 && objectDeleted == false)
+   {
+      olderBaseline = newerBaseline
+      newerBaseline = null
+      olderModule = newerModule
+      newerModule = read(name homeModule, false) // current version
+
+      current = newerModule
+      filtering off
+      current = olderModule
+      filtering off
+
+      current = homeModule
+
+      reqOlderObject = object(objectIdInt, olderModule)
+      reqNewerObject = object(objectIdInt, newerModule)
+
+      if (null reqOlderObject || null reqNewerObject)
+      {
+         if (null reqOlderObject && !null reqNewerObject)
+         {
+            addBaselinesHeading(redlinedTxt, olderBaseline, newerBaseline)
+            redlinedTxt = redlinedTxt "{\\i object #" objectIdStr " has been} {\\cf3 created in baseline "  getBaselineString(newerBaseline) "}\n"
+            addNewObjectAttributes(redlinedTxt, reqNewerObject, atrList)
+         }
+         if (!null reqOlderObject && null reqNewerObject)
+         {
+            addBaselinesHeading(redlinedTxt, olderBaseline, newerBaseline)
+            redlinedTxt = redlinedTxt "{\\i object #" objectIdStr " has been} {\\cf3\\strike deleted in baseline "  getBaselineString(newerBaseline) "}\n"
+         }
+         /* if doesn't exists in the latest neither current version do not do anything */
+      }
+      else
+      {
+         /* object exists in both latest and current version, then compare */
+         addBaselinesHeading(redlinedTxt, olderBaseline, null Baseline)
+
+         objectHasChanged = false
+
+         for str in atrList do
+         {
+            if (!attribUnchanged(reqOlderObject, reqNewerObject, str, redlinedMsg))
+            {
+               redlinedTxt += exportRTFString(tempStringOf redlinedMsg)
+               objectHasChanged = true
+            }
+         }
+
+         if (objectHasChanged == false)
+         {
+            redlinedTxt = redlinedTxt "{\\i No changes }\n"
+         }
+      }
+   }
+
+   delete (atrList) //delete Skip list of selected attributes jdn 041207
+
+
+   //---------------------------------------------
+   //      create results dialog
+   //----------------------------------------------
+   DB bcDB = create "History of object #" objectIdStr
+
+   // The DBE element which will store the comparison result in the rich text format
+   DBE redliningDBE = richText(bcDB,"","initial",500,300,true)
+
+   realize bcDB
+   useRTFColour(redliningDBE, true) // The usage of the perm allows redlining feature
+
+   set(redliningDBE, redlinedTxt)
+   delete redlinedTxt
+   show bcDB /* show the report */
+
+   delete redlinedMsg
+}
+
+//------------------------
+void closeDown (DB w)
+//------------------------
+{
+   delete (baselines)
+   hide (w)
+}
+
+
+//-------------------------------------------------
+void buildWin (Module m)
+//-------------------------------------------------
+{
+   string choices[] = ("Print baseline description")
+   
+   win = create (TITLE)   //create win and add title
+
+
+   //------- Baseline selection lists ------------------------
+
+   list1 = list(win, "Older", 300, 10, empty)
+   list2 = list(win, "Newer", 300, 10, empty)
+
+   list1->"right"->"unattached"          // make lists side by side
+   list2->"left"->"flush"->list1
+   list2->"top"->"aligned"->list1
+   list2->"right"->"unattached"
+
+   //------- atribute selection list -----------------------
+
+   atrListDbe = multiList (win,"Attributes To Compare",6,empty)   //attribute selection list jdn 041207
+
+   //--------  compare button and show baseline option ------------
+   
+   objectId = field(win, "Object ID", "", 30, false)
+   
+   // places checkBox to the right of the objectId
+   beside win
+   
+   showBaselineDesc = checkBox (win, "", choices, 1)
+   
+   // places checkBox to the right of the objectId
+   //showBaselineDesc -> "top" -> "aligned" -> objectId   
+   //showBaselineDesc -> "left" -> "flush" -> objectId
+   
+   //button(win, "Show history", createHistory)
+	apply(win, "Show history", createHistory)
+
+   close (win,true, closeDown)
+
+   //-------------   initialize attribute select list with object property attributes
+
+   realize win
+
+   string str = ""
+   string str2 = ""
+   AttrDef at = null
+   for at in m do
+   {
+      if (at.object && !at.hidden) then
+      {
+         str = at.name
+         insert (atrListDbe,noElems(atrListDbe),str)
+      }
+   }//end for
+
+   //------------- set default attribute selections based on default array  --------------- jdn 041307
+
+   int i = 0
+   int x = 0
+   for (i = 0 ; i < noElems(atrListDbe) ; i++ )
+   {
+      str = get (atrListDbe,i)
+
+      for (x = 0; x < sizeof (DEFAULT_ATTRIBUTES_TO_COMPARE) ; x++)
+      {
+         if DEFAULT_ATTRIBUTES_TO_COMPARE[x] == str then
+         {
+         set (atrListDbe,i,true)
+         break
+         }
+      }//endfor
+
+   }//endfor
+
+   // initialize baseline selection lists with current baselines in descending order
+
+   for b in m do
+   {
+      i++
+      str = (major b) "." (minor b) (suffix b)
+      put(baselines, str, b)                     //add baseline to skip lookup list jdn 041307
+      insert(list1, 0, str)
+      insert(list2, 0, str)
+   }
+
+   //----- make 'current' first option
+   insert(list1, 0, "current")
+   insert(list2, 0, "current")
+
+   show win
+}
+
+//----------------------------------
+//           MAIN
+//----------------------------------
+
+//--------  check for pre-conditions   ------------
+
+
+homeModule = current Module
+
+if (null homeModule) then
+{
+   warningBox "Please run from an opened module."
+   halt
+}
+
+//----  Determine if at least one baseline exists
+
+bool atleastOne = false
+
+for b in homeModule do
+{
+   atleastOne = true
+   break
+}
+
+if (!atleastOne) then
+{
+   infoBox "No baselines to compare."
+   halt
+}
+
+//----- Pre-conditions check out.. ok to continue
+
+buildWin (homeModule)

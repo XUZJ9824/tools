@@ -1,0 +1,56 @@
+//############################################################################
+//#
+//# List all modules of a certain type
+//#
+//# Modifications:
+//#
+//# Date:        Who:    Description:
+//# 09 Jul 2004  Baran   Baseline
+//#
+//############################################################################
+
+pragma runLim,0 // turn off the timeout dialog
+
+// The modules that will be looked at must start with this string
+//string szModuleID  = "SW_SRD_";
+string szModuleID  = "SYS_SRS_";
+string ModuleName
+
+int  iProgLine    = 0;     // Current element to write to in progress box
+bool bShowProg    = false; // Shows that the progress box is displayed
+bool bRestartProg = false; // This is need because DOORS blows away 
+                           // the progress box on a handled exception
+bool   bDRError   = false; // used to avoid duplicate error messages for a module
+bool   bDFRError  = false; // used to avoid duplicate error messages for a module
+Buffer sbOTBuff;           // A buffer for working with Ojbect Text
+Baseline b
+Module m
+
+#include "UtilityRoutines.dxl"
+
+Stream FileList = write "c:/temp/FileList.txt"
+
+//******************************************************************************
+// Main
+//******************************************************************************
+   FileList << "Report latest baseline numbers of a certain type of module.\n\n"
+   for ModuleName in current Project do {
+       if (match_prefix (ModuleName, szModuleID)){
+          m = read(ModuleName , false)
+          if (!(null current Module)){
+             b = getMostRecentBaseline(m) 
+             if (!(null b)){
+	          FileList << ModuleName "\t" (major b) "." (minor b) "\n"
+            //    print ModuleName "  " (major b) "." (minor b) "\n"
+             }else{
+                print ModuleName " Has Null Baseline Info\n"
+                FileList << ModuleName "\tHas Null Baseline Info\n"
+             }
+          }else{
+            print ModuleName " Is Null \n"
+            FileList << ModuleName "\tIs Null \n"
+          }
+	  }
+   }
+
+close (FileList)

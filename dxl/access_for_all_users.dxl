@@ -1,0 +1,30 @@
+
+#include "UtilityRoutines.new.dxl"
+
+Stream Output = write "D:/list.txt"
+
+
+Item i
+for i in current Folder do
+{
+
+   AccessRec Arec
+   string strTemp
+   for Arec in i do{
+      strTemp =  getPermissions(Arec) 
+      if (strTemp == "RMCD") {
+        string user = username Arec
+          if ((user != "BARS/BRNO") && (user != "HTSL (Beijing and India)") &&
+              (user != "Honeywell-US") && (user != "PerfSw")) {
+            Output << fullName(i) 
+            Output << '\n'
+            Output << user " "
+            Output << "( "strTemp " )\n\n"
+           }
+           
+      }
+    }
+
+}
+
+  print "done"

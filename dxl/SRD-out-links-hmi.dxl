@@ -1,0 +1,347 @@
+Module  m= current;
+Project p= current;
+
+DB DB_outlink;
+DBE listDBE_tagert, listDBE_cr, toggleDEB_cr;
+int progressBarSteps= 0;
+
+
+
+string szDerReqID   ;
+string szDefrReqID  ; 
+string szReqAnalyID = "Req Analysis";   
+string szCRID       = "CR";         
+string szProjectID  = "Project";              
+string szObjTextID  = "Object Text";          
+string szTestMethID = "Test Method";         
+string szVerifyID   = "Verification Method "; 
+string szSWRelease  = "SW Release";           
+string szAbsNum     = "Absolute Number"
+string szObjId      = "Object Identifier"
+
+int count_Req         = 0
+int count_HiLevel     = 0;
+int count_Derived     = 0;
+int count_Defferd     = 0;
+int count_SrsTested   = 0;
+int count_SvcpTest    = 0;
+int count_Test        = 0;
+int count_DerSrsTested= 0;
+int count_DerSvcpTest = 0;
+int count_DerTest     = 0;
+
+
+bool comfirmAttribute()
+{
+	AttrDef ad;
+	if((ad=find(m, "Derived REQ"))!=null)
+	{
+		szDerReqID= "Derived REQ"
+	}
+	else if((ad=find(m, "Derived Requirement"))!=null)
+	{                
+		szDerReqID= "Derived Requirement"
+	}
+	else
+	{
+		ack "There is not a Attribute about Derived in Module:" name(m) "\n"
+		return false;
+	}
+	
+	if((ad=find(m, "Deferred REQ"))!=null)
+	{
+		szDefrReqID= "Deferred REQ"
+	}
+	else if((ad=find(m, "Deferred Requirement"))!=null)
+	{                
+		szDefrReqID= "Deferred Requirement"
+	}
+	else
+	{
+		ack "There is not a Attribute about Deferred in Module:" name(m) "\n"
+		return false;
+	}
+
+	return true;
+}
+
+
+void doWork(DB db)
+{	
+
+	count_Req         = 0
+	count_HiLevel     = 0;
+	count_Derived     = 0;
+	count_Defferd     = 0;
+	count_SrsTested   = 0;
+	count_SvcpTest    = 0;
+	count_Test        = 0;
+	count_DerSrsTested= 0;
+	count_DerSvcpTest = 0;
+	count_DerTest     = 0;
+
+	bool bool_cr= false;
+	string strcr= get(listDBE_cr);
+	if(get(toggleDEB_cr))
+	{	
+		bool_cr= true;
+		if(strcr=="")
+		{
+			string buttons[] = {"OK"} 
+			messageBox("Please choice CR!", buttons, msgWarning);
+			return ;	
+		}
+	}
+
+	int i= 0;
+	int selectNum= 0;
+	string strArrSelectTagert[100];
+	Module moduleTagert[100];
+
+	for i in listDBE_tagert do
+	{
+		strArrSelectTagert[selectNum++]= get(listDBE_tagert, i);
+		moduleTagert[selectNum-1]=  read(strArrSelectTagert[selectNum-1] , false)
+	}
+	
+	
+	string filename1= "c:\\sdr_out_links.csv"
+	string filename2= "c:\\sdr_out_links.txt"
+
+	Stream stream_file1= write filename1;
+	stream_file1 << "SRD Name, Requirement, Req Analysis, SRS Link(s)" "\n"
+	
+
+	Stream stream_file2= write filename2;
+	stream_file2 << "Requirements Count" "\n\n"
+	stream_file2 << "Project: " name(p) "\n\n\n"
+	stream_file2 << "Module: "  name(m) "\n\n"
+
+
+	Object o;
+	Link lnk;
+	i= 0;
+	int step= 0;
+	string strReqAnsly= "";
+
+	progressStart(DB_outlink, "Finding", "", progressBarSteps);
+	for o in m do 
+	{	
+		progressStep ++step;
+		
+		if(bool_cr)
+		{	
+			string cr= o.szCRID;
+			if(!matches(strcr[6:], cr) )
+			{
+				continue;
+			}
+		}
+		
+		
+		strReqAnsly= ""
+		bool boolReq= false;
+		if(name(p)!="Mark II")
+		{	
+			bool boolDerReq = o.szDerReqID ;
+			bool boolDefrReq= o.szDefrReqID;
+
+			if(boolDerReq)
+			{
+				strReqAnsly= "Derived";
+				count_Defferd++;
+			}
+			if(boolDefrReq)
+			{
+				strReqAnsly= strReqAnsly " Deferred";
+				count_Derived++;
+			}
+			
+			string objText= o.szObjTextID;
+			if(matches("shall", objText) && (!boolDefrReq) )
+			{
+				boolReq= true;
+				count_Req++;
+				count_HiLevel= count_Req-count_Derived;
+			}
+		}
+		else
+		{
+			strReqAnsly= o.szReqAnalyID;
+			if(matches("Derived", strReqAnsly))
+			{
+				boolReq   = true;
+				derivedReq= true;
+				count_Derived++;
+				count_Req++;
+//				print "Derived " identifier(o) "\n"
+			}
+			else if(matches("Deferred", strReqAnsly))
+			{
+				boolReq    = true;
+				deferredReq= true;
+				count_Defferd++;
+				count_Req++;
+//				print "Deferred" identifier(o) "\n"
+			}
+			else if(matches("HI Level Req", strReqAnsly))
+			{
+				boolReq= true;
+				count_HiLevel++;
+				count_Req++;
+			}
+			else
+			{
+			}
+		}
+		
+		
+		bool boolLink=false;
+    		for lnk in o -> "*" do 
+		{
+	    		string strTagert= name target(lnk);
+			for(i=0; i<selectNum; i++)
+			{
+				if(matches(strTagert,strArrSelectTagert[i]))
+				{
+					Object tgt= target(lnk);
+					
+					stream_file1 << name(m) "," identifier(o) "," 
+					
+					stream_file1 << strReqAnsly ","
+					
+					stream_file1 << strTagert":"identifier(tgt) "\n"
+					
+					boolLink= true;
+
+					break;
+				}
+			}
+		}
+		
+		if(!boolLink)
+		{	
+			if(boolReq)
+			{
+				stream_file1 << name(m) "," identifier(o) "," 
+
+				stream_file1 << strReqAnsly ","
+		
+				stream_file1 << "\n"
+			}
+		}
+		
+   	}
+	
+
+	stream_file2 << "Requirements= " count_Req     "         "
+	stream_file2 << "High Level= "   count_HiLevel "         "
+	stream_file2 << "Deferred= "     count_Defferd "         "
+	stream_file2 << "Derived= "      count_Derived "\n\n"
+	
+	stream_file2 << "SRS Tested          = N/A    "
+	stream_file2 << "SVCP Tested         = N/A    "
+	stream_file2 << "Tested              = N/A  \n"
+	
+	stream_file2 << "Derived SRS Tested  = N/A    "
+	stream_file2 << "Derived SVCP Tested = N/A    "
+	stream_file2 << "Derived Tested      = N/A  \n"
+
+
+
+	progressStop();
+
+	close stream_file1;
+	close stream_file2;
+
+
+	for(i=0; i<selectNum; i++)
+	{
+		close moduleTagert[i];
+	}
+}
+
+
+
+void selectCR(DBE dbe)
+{
+	if(get(dbe))
+	{
+		active(listDBE_cr);
+	}
+	else
+	{
+		inactive(listDBE_cr);
+	}	
+}
+
+void creatDB()
+{
+
+	if(!comfirmAttribute())
+	{
+		return;
+	}
+	
+	string strArrCR[100];
+	int CRNum= 0;
+	for(CRNum=0; CRNum<30; CRNum++)
+	{	
+		strArrCR[CRNum]= "PVCSD_CMU_CR_"(9100+CRNum)"";
+	}
+
+
+	string strArrTagert[100];
+	int TagertNum= 0;
+	int i= 0;
+	Link lnk;
+	Object o;
+	
+	progressBarSteps= 0;
+	for o in m Module do 
+	{
+    		for lnk in o -> "*" do 
+		{
+        		string strTagert= fullName target(lnk);
+			int flag= 0;
+			for(i=0; i<TagertNum; i++)
+			{	
+				if(strArrTagert[i]==strTagert)
+				{
+					flag= 1;
+					continue;
+				}
+	        	} 
+			if(flag==0)
+			{
+				strArrTagert[TagertNum++]= strTagert;
+			}  	
+    		}
+		progressBarSteps++;
+	}
+	
+	
+
+	DB_outlink= create("Find Out links Box") 
+
+	DBE lblDBE_p= label(DB_outlink, "Project: "name(p))
+	beside(DB_outlink);
+	DBE lblDBE_m= label(DB_outlink, "  Module:" name(m))
+	beside(DB_outlink);
+	toggleDEB_cr = toggle(DB_outlink, "CR", true);
+	
+	set(toggleDEB_cr, selectCR);
+
+	listDBE_cr= list(DB_outlink, "CR", 200, 10, strArrCR, CRNum)
+	listDBE_tagert= multiList(DB_outlink, "Tagert", 200, 10, strArrTagert, TagertNum)
+	
+
+	listDBE_cr->"right"->"unattached"
+	listDBE_tagert->"left"->"flush"->listDBE_cr
+	listDBE_tagert->"top"->"aligned"->listDBE_cr
+
+	apply(DB_outlink, "apply", doWork);
+	show(DB_outlink);
+}
+
+creatDB()

@@ -1,0 +1,27 @@
+
+#include "UtilityRoutines.new.dxl"
+
+Stream Output = write "d:/access_list_my.txt"
+
+const string user_name = "Donna Bost" 
+
+Item i
+for i in current Folder do
+{
+
+   AccessRec Arec
+   string strTemp
+   for Arec in i do{
+      string user = username Arec
+       if (user == user_name) {
+        Output << fullName(i) 
+         Output << '\n'
+         Output << user " "
+         strTemp =  getPermissions(Arec) 
+        Output << "( "strTemp " )\n\n"
+      }
+   }
+
+}
+
+  print "done"

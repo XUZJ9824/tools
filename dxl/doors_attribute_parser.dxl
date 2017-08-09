@@ -1,0 +1,124 @@
+/*
+*  The script goes through all modules in the specified project and lists the objects
+*  that have desired attribute set
+*
+*
+*
+*
+*/
+
+pragma runLim,0
+
+print "Started: " dateAndTime(today()) "\n"
+
+const int scanNo = 10000
+
+const string projectOfInterest = "/CMU-CMF Requirements and Test"
+const string dirname="C:\\doors_report\\"   //** ESCAPE slashes
+const string columnOfInterest = "SW Release Variant"
+
+const Regexp emptyStr = regexp "^$"
+//matches the most common documents
+//change as appropriate, mainly ICDs are excluded
+//if there is only one 'option' exclude the pipe at the end of it
+const Regexp documentOfInterest = regexp "^("//-
+                                             "SW_SDD|"//-
+                                             "SW_SRD|"//-
+                                             "SYS_SRS|"//-
+                                             "SW_SVCP|"//-
+                                             "SW_HSI|"//-
+                                             "SYS_SVP|"//-
+                                             //"SYS_VTS|"//-
+                                             "SYS_TATS|"//-
+                                             "STC_"//-
+                                          ")"
+
+if(!fileExists_(dirname"."))
+{
+      mkdir(dirname)
+}
+
+Project p
+for p in database do {
+
+   //exlcude DATACOM project (it just contains other projects and DOORS Training folder does not need to be parsed
+   if (fullName(p) == "/DATACOM" || fullName(p) == "/DOORS Training " || fullName(p) == "/VIA Custom") continue
+
+
+   //development and\or performance:
+   //parse only the specified project
+   if (fullName(p) != projectOfInterest) continue
+
+   Stream Output = write(dirname fullName(p) ".csv", CP_UTF8 )
+
+   Output << "Module name, Object identifier, <<" << columnOfInterest << ">> text\n"
+
+   /* Output << fullName(p) */
+   /* Output << '\n' */
+   int break_after = 0
+
+   Item i
+   /* for all items in the project*/
+   for i in p do {
+
+      //Exclude everything except formal modules (mainly Link modules)
+      if((type (i)) != "Formal"){
+         continue
+      }
+      //this is where the regex is used
+      if(! documentOfInterest name(i)) {
+         continue
+      }
+
+      /* Output << fullName(i) << '\n' */
+      print "Item name: " name(i) "; Can be read: " canRead(i) " and "
+
+      /* ack "Click to continue execution." */
+      //opens module so it is available for the parsing
+      Module m = read(fullName(i), false)
+
+      if (m == null) {
+         continue
+      }
+
+      // checks whether the desired attribute exists in the current module
+      /* AttrType at = find(m, columnOfInterest) */
+      AttrDef ad = find(m, columnOfInterest)
+      /* bool attributeExists = (at != null) */
+
+      if (null ad) {
+         print "Attribute <<" columnOfInterest ">> DOES NOT exist!" "\n"
+      }
+      else {
+         /* set(attribute columnOfInterest != "") */
+         /* applyFiltering(m) */
+
+         Object o
+         print "Attribute <<" columnOfInterest ">> exists!" "\n"
+         for o in all current Module do {
+             string s = o.columnOfInterest
+
+             if (! emptyStr s){
+               Output << fullName(i)
+               Output << ","
+               Output << identifier(o)
+               Output << ","
+               Output << s "\n"
+            }
+         }
+      }
+
+      //close the module after it has been dealt with
+      bool result = close(m, false)
+
+      //do not include blank line between new modules (better for filtering in excel)
+      /* Output << "\n" */
+
+      //development and\or performance:
+      //parse only specified number of files
+      break_after++
+      if (break_after >= scanNo)
+         break
+   }
+}
+print "Finished: " dateAndTime(today()) "\n"
