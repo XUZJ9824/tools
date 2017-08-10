@@ -112,10 +112,10 @@ def Daywise_Effort_Process():
     location_make = location_make + "\\"
   
     location_bat = ".\sap_DayWise_Ex.bat"
-    #os.system(location_bat + " \"DAYWISE\" \"" + City_key +"\" \""+ WORK_CENTER+"\" \"" + location_make +"\"")   
-    os.system(location_bat + " \"DAYWISE\" \"" + Site_Name +"\" \""+ Work_Center+"\" \"" + location_make + "\" \"" + SAP_Profile_Str + "\"")
-    
-    print(location_bat+ " \"DAYWISE\" \"" + Site_Name + "\" \"" + Work_Center +"\" \""+ location_make + "\" \"" + SAP_Profile_Str + "\"")     
+    #os.system(location_bat + " \"DAYWISE\" \"" + City_key +"\" \""+ WORK_CENTER+"\" \"" + location_make +"\"")
+    print(    location_bat + " \"DAYWISE\" \"" + Site_Name + "\" \"" + Work_Center + "\" \"" + location_make + "\" \"" + SAP_Profile_Str + "\"")
+    os.system(location_bat + " \"DAYWISE\" \"" + Site_Name + "\" \"" + Work_Center + "\" \"" + location_make + "\" \"" + SAP_Profile_Str + "\"")
+
     fileExist_Time = False
 
     while(fileExist_Time == False and sleepCount>=1):

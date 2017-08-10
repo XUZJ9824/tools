@@ -21,11 +21,11 @@ set SAPLoginProfile=%5
 
 echo "Start DayWise batch, "
 
-echo tcode %TCode_Name%
-echo site %Site_Name%
-echo work_center %work_center%
-echo dest_path %DestPath%
-echo sap_profile %SAPLoginProfile%
+echo tcode "%TCode_Name%"
+echo site "%Site_Name%"
+echo work_center "%work_center%"
+echo dest_path "%DestPath%"
+echo sap_profile "%SAPLoginProfile%"
 
 
 if not exist "C:\Temp" mkdir C:\Temp
@@ -34,7 +34,7 @@ del /F *.XLSX
 del /F C:\Temp\*.XLS*
 rem if exist C:\Windows\SysWOW64\WScript.exe (start %filepath%%filename% %1 %2 %3 %4 %5 cd) else (start %filename% %1 %2 %3 %4 %5 cd)
 
-if exist C:\Windows\SysWOW64\WScript.exe (start /B /MIN /WAIT %filepath% %filename% "%TCode_Name%" "%Site_Name%" "%work_center%" %SAPLoginProfile% "%DestPath%" cd) else (start /B /MIN /WAIT %filename% "%TCode_Name%" "%Site_Name%" "%work_center%" "%SAPLoginProfile%" "%DestPath%" cd)
+if exist C:\Windows\SysWOW64\WScript.exe (start /B /MIN /WAIT %filepath% %filename% %TCode_Name% %Site_Name% %work_center% %SAPLoginProfile% "%DestPath%" cd) else (start /B /MIN /WAIT %filename% %TCode_Name% %Site_Name% %work_center% "%SAPLoginProfile%" "%DestPath%" cd)
 
 
 

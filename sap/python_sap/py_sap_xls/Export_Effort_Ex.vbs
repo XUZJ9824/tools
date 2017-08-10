@@ -28,15 +28,15 @@ public Sub main_proc()
     curDay = Day(Now)
 
 	TCode_Name = WScript.Arguments.Item(0)    
- 	msgbox TCode_Name
+ 	'msgbox TCode_Name
 	Site_Name =  WScript.Arguments.Item(1)
-    msgbox Site_Name
+    'msgbox Site_Name
 	work_center = WScript.Arguments.Item(2) 
-    msgbox work_center	
+    'msgbox work_center	
     SAPLoginProfile = WScript.Arguments.Item(3) 
-    msgbox SAPLoginProfile
+    'msgbox SAPLoginProfile
 	DestPath = WScript.Arguments.Item(4) 
-    msgbox DestPath
+    'msgbox DestPath
 
 		
 	bChoseManulMonth = 0 Rem: switch manual month or auto mode.
@@ -51,32 +51,40 @@ public Sub main_proc()
 	end if
 
 	Set Application = CreateObject("Sapgui.ScriptingCtrl.1")
+    
 	Set Connection  = Application.OpenConnection(SAPLoginProfile, True)
+
 	Set session     = Connection.Children(0)
 
 	'On error resume next
-
+'msgbox "1"
 	If TCode_Name = "DAYWISE" Then	        
 			select case Site_Name
 				case "SH"
+                'msgbox "4"
 					Plant_Code = "385C"					 
 					Generate_Daywise_Report
 				case "BJ"
+                'msgbox "2"
 					Plant_Code = "373C"					 
 					Generate_Daywise_Report
+                    'msgbox "3"
 			    case "ALL"
+                    'msgbox "5"
 					Plant_Code = "385C"					 
 					Generate_Daywise_Report
 					Plant_Code = "373C"					 
 					Generate_Daywise_Report
 			    default:
+                    'msgbox "6"
 				    Msgbox "Invalid Site Name " & Site_Name
 			end Select
-	elseif TCode_Name = "" then			
+	else	
+            msgbox "Invalid TCode[" & TCode_Name & "]"
 			Set Application = Nothing	
 			
 	End If
-	
+	'msgbox "8"
 	Rem Shutdown the connection
 	Set session     = Nothing
 	Connection.CloseSession("ses[0]")
