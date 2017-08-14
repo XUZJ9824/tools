@@ -217,25 +217,25 @@ def update_used_hours():
     #xlsABMReport = openpyxl.Workbook(xls_IMMR_ABM_Report)
     #sheetEffort = xlsABMReport.get_sheet_by_name('Effort')
 
-    lst_WBS = [['AE-00003689-001-0010','IMMR BITE Coding and Test', '0'],
-               ['AE-00003689-001-0011','IMMR SW Host Engr Support','0'],
-               ['AE-00003689-001-0012','IMMR IO Host SW Req','0'],
-               ['AE-00003689-001-0013','IMMR IO HOST Code and Test','0'],
-               ['AE-00003689-001-0014','L2 Interactive Req','0'],
-               ['AE-00003689-001-0015','L2 Interactive Code','0'],
-               ['AE-00003689-001-0016', 'L2 FLS Req', '0'],
-               ['AE-00003689-001-0017', 'L2 FLS Code', '0'],
-               ['AE-00003689-001-0018', 'IMMR L1A SW SCR', '0'],
-               ['AE-00003689-001-0019', 'SW Doc and Analysis', '0'],
-               ['AE-00003689-001-0020', 'SW MCDU Bite', '0'],
-               ['AE-00003741-001-0005', 'AMQP Dev', '0'],
-               ['AE-00004450-002-0001', 'MkII BGA SW', '0'],
-               ['AE-00004450-002-0002', 'MkII BGA Sys', '0'],
-               ['AE-00003789-002-0002', 'VPD-EPIC Engineering Kits', '0'],
-               ['AE-00003924-005-0001','AOIP QE CNS','0'],
-               ['AE-00003924-005-0002', 'AOIP QE SVV', '0'],
-               ['AE-00004056-001-0003', 'AOIP QE CNS-2', '0'],
-               ['AE-00003810-007-0004', 'Finance OEF Tool', '0'],
+    lst_WBS = [['AE-00003689-001-0010','IMMR BITE Coding and Test', '0','C2'],
+               ['AE-00003689-001-0011','IMMR SW Host Engr Support','0','C3'],
+               ['AE-00003689-001-0012','IMMR IO Host SW Req','0','C4'],
+               ['AE-00003689-001-0013','IMMR IO HOST Code and Test','0','C5'],
+               ['AE-00003689-001-0014','L2 Interactive Req','0','C6'],
+               ['AE-00003689-001-0015','L2 Interactive Code','0','C7'],
+               ['AE-00003689-001-0016', 'L2 FLS Req', '0','C8'],
+               ['AE-00003689-001-0017', 'L2 FLS Code', '0','C9'],
+               ['AE-00003689-001-0018', 'IMMR L1A SW SCR', '0','C10'],
+               ['AE-00003689-001-0019', 'SW Doc and Analysis', '0','C11'],
+               ['AE-00003689-001-0020', 'SW MCDU Bite', '0','C12'],
+               ['AE-00003741-001-0005', 'AMQP Dev', '0','C14'],
+               ['AE-00004450-002-0001', 'MkII BGA SW', '0','C15'],
+               ['AE-00004450-002-0002', 'MkII BGA Sys', '0','C16'],
+               ['AE-00003789-002-0002', 'VPD-EPIC Engineering Kits', '0','C17'],
+               ['AE-00003924-005-0001','AOIP QE CNS','0','C18'],
+               ['AE-00003924-005-0002', 'AOIP QE SVV', '0','C19'],
+               ['AE-00004056-001-0003', 'AOIP QE CNS-2', '0','C20'],
+               ['AE-00003810-007-0004', 'Finance OEF Tool', '0','C21'],
                ]
     lst_wbs_effort = []
     #for rownum in range(2, sheetEffort.nrows):
@@ -255,6 +255,14 @@ def update_used_hours():
     for ele in lst_WBS:
         print(ele)
 
+    #write data back to xls
+    wt_wkxls = openpyxl.load_workbook(xls_IMMR_ABM_Report)
+    #wt_sheet = wt_wkxls.get_sheet_by_name(r'Effort')
+    wt_sheet = wt_wkxls.get_sheet_by_name("Effort")
+    for wbs in range(0,len(lst_WBS)):
+        wt_sheet.cell(lst_WBS[wbs][3]).value = lst_WBS[wbs][2]
+    wt_wkxls.save(xls_BJ_Effort)
+    wt_wkxls.close()
 #def msg_box(str1, str2):
     #QtWidgets.QMessageBox.about("My message box", "Text1 = %s, Text2 = %s" % ('T1', 'T2') )
 
