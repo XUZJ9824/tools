@@ -232,7 +232,12 @@ def get_configfile_infor():
 
 
 if __name__ == '__main__':
-    try:
+    try:        
+        ret = os.system('tasklist | find "sbus.exe"')
+        ret = os.system('tasklist | find "sbusagent.exe"')
+        ret = os.system('tasklist | find "saplogon.exe"')
+        print("Kill existed SAP process, ", ret)
+    
         get_configfile_infor()
         Daywise_Effort_filename = os.getcwd() + "\\" + Site_Name + "_" + Work_Center + "_Daywise_Effort.XLSX"
         print("get_configfile_infor",Daywise_Effort_filename)

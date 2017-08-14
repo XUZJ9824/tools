@@ -35,7 +35,7 @@ del /F C:\Temp\*.xls*
 
 rem if exist C:\Windows\SysWOW64\WScript.exe (start %filepath%%filename% %1 %2 %3 %4 %5 cd) else (start %filename% %1 %2 %3 %4 %5 cd)
 
-if exist C:\Windows\SysWOW64\WScript.exe (start /B /MIN /WAIT %filepath% %filename% %TCode_Name% %Site_Name% %work_center% %DestPath% %SAPLoginProfile% cd) else (start /B /MIN /WAIT %filename% %TCode_Name% %Site_Name% %work_center% %DestPath% %SAPLoginProfile% cd)
+if exist C:\Windows\SysWOW64\WScript.exe (start /B /MIN /WAIT %filepath% %filename% %TCode_Name% %Site_Name% %work_center% %SAPLoginProfile% "%DestPath%" cd) else (start /B /MIN /WAIT %filename% %TCode_Name% %Site_Name% %work_center% "%SAPLoginProfile%" "%DestPath%" cd)
 
 
 

@@ -27,11 +27,17 @@ public Sub main_proc()
     curMonth = Month(Now)
     curDay = Day(Now)
 
-	TCode_Name = WScript.Arguments.Item(0)     	
+	TCode_Name = WScript.Arguments.Item(0)    
+ 	'msgbox TCode_Name
 	Site_Name =  WScript.Arguments.Item(1)
+    'msgbox Site_Name
 	work_center = WScript.Arguments.Item(2) 
-	DestPath = WScript.Arguments.Item(3) 
-	SAPLoginProfile = WScript.Arguments.Item(4) 
+    'msgbox work_center	
+    SAPLoginProfile = WScript.Arguments.Item(3) 
+    'msgbox SAPLoginProfile
+	DestPath = WScript.Arguments.Item(4) 
+    'msgbox DestPath
+
 		
 	bChoseManulMonth = 0 Rem: switch manual month or auto mode.
 
@@ -49,28 +55,34 @@ public Sub main_proc()
 	Set session     = Connection.Children(0)
 
 	'On error resume next
-
+'msgbox "1"
 	If TCode_Name = "DAYWISE" Then	        
 			select case Site_Name
 				case "SH"
+                'msgbox "4"
 					Plant_Code = "385C"					 
 					Generate_Daywise_Report
 				case "BJ"
+                'msgbox "2"
 					Plant_Code = "373C"					 
 					Generate_Daywise_Report
+                    'msgbox "3"
 			    case "ALL"
+                    'msgbox "5"
 					Plant_Code = "385C"					 
 					Generate_Daywise_Report
 					Plant_Code = "373C"					 
 					Generate_Daywise_Report
 			    default:
+                    'msgbox "6"
 				    Msgbox "Invalid Site Name " & Site_Name
 			end Select
-	elseif TCode_Name = "" then			
+	else	
+            msgbox "Invalid TCode[" & TCode_Name & "]"
 			Set Application = Nothing	
 			
 	End If
-	
+	'msgbox "8"
 	Rem Shutdown the connection
 	Set session     = Nothing
 	Connection.CloseSession("ses[0]")
@@ -119,11 +131,19 @@ public sub Generate_Daywise_Report
 		tmpMonth = curMonth - 2
     End If
 	
-	iWeekday = Weekday(Now(), vbFriday)
-    LastFriday = Now - (iWeekday - 1)		   
+	'iWeekday = Weekday(Now(), vbFriday)
+	iWeekday = Weekday(Now(), vbSunday)
+    LastSunday = Now - (iWeekday - 1)		   
 	
     strInit = "01" & "." & tmpMonth & "." & Year(Now)
-	strNow = Day(LastFriday) & "." & Month(LastFriday) & "." & Year(LastFriday)
+	strNow = Day(LastSunday) & "." & Month(LastSunday) & "." & Year(LastSunday)
+	
+	if( tmpMonth = 1 ) and ( curDay < 8 )then
+		strInit = "01" & "." & 12 & "." & (Year(Now) - 1)
+		'strNow = Day(Now) & "." & Month(Now) & "." & Year(Now)
+	end if
+	
+	'msgbox strNow
 	
 	local_work_center = "385C100108"
 	    	
