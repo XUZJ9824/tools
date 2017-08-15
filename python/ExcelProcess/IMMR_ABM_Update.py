@@ -260,8 +260,8 @@ def update_used_hours():
     #wt_sheet = wt_wkxls.get_sheet_by_name(r'Effort')
     wt_sheet = wt_wkxls.get_sheet_by_name("Effort")
     for wbs in range(0,len(lst_WBS)):
-        wt_sheet.cell(lst_WBS[wbs][3]).value = lst_WBS[wbs][2]
-    wt_wkxls.save(xls_BJ_Effort)
+        wt_sheet(lst_WBS[wbs][3]).value = lst_WBS[wbs][2]
+    wt_wkxls.save(xls_IMMR_ABM_Report)
     wt_wkxls.close()
 #def msg_box(str1, str2):
     #QtWidgets.QMessageBox.about("My message box", "Text1 = %s, Text2 = %s" % ('T1', 'T2') )
